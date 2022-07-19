@@ -25,6 +25,8 @@ class ESignGUI:
         self.signature_files = []  # type: list
         self.signature_image = None  # type: ImageTk.PhotoImage
         self.pdf_image = None  # type: ImageTk.PhotoImage
+        self.signatures = None  # type: list[list[tuple[float, float, float, float]]]
+        self.rect_press_cord = None  # type: tuple[float, float]
 
         # Layout
         self.width, self.height = 500, 600
@@ -69,10 +71,14 @@ class ESignGUI:
         self.pdf_last_page_button.bind('<Button-1>', self.handler_pdf_last_page_button)
         #
         self.pdf_preview = ttk.Label(self.window, image=self.pdf_image, anchor='center')
+        self.pdf_preview.bind('<ButtonPress-1>', self.handler_pdf_preview_clicked)
+        self.pdf_preview.bind('<ButtonRelease-1>', self.handler_pdf_preview_clicked)
 
         # Control
         self.sign_page_button = ttk.Button(self.window, text='Sign page')
         self.sign_page_button.bind('<Button-1>', self.handler_sign_page)
+        self.clear_page_button = ttk.Button(self.window, text='Clear page')
+        self.clear_page_button.bind('<Button-1>', self.handler_clear_page)
 
         self.update_widget_position()
         self.window.update()
@@ -95,6 +101,7 @@ class ESignGUI:
             # 
             (self.pdf_preview, (0.01, 0.13), (0.76, 0.86)),
             #
+            (self.clear_page_button, (0.77, 0.82), (0.22, 0.05)),
             (self.sign_page_button, (0.77, 0.88), (0.22, 0.11)),
 
         )
@@ -132,6 +139,7 @@ class ESignGUI:
             # Reset values
             self.pdf_number_of_pages = None
             self.pdf_page_number = None
+            self.signatures = None
             # Update pdf file
             try:
                 # Open pdf file
@@ -139,6 +147,7 @@ class ESignGUI:
                 # Update pages
                 self.pdf_number_of_pages = self.pdf.get_number_of_pages()
                 self.pdf_page_number = 1
+                self.signatures = [list() for _ in range(self.pdf_number_of_pages)]
             except Exception as error:
                 messagebox.showinfo("Error", f'Error while opening pdf file:\n{error}\nPath: {self.pdf_file_path}')
             else:    
@@ -193,6 +202,25 @@ class ESignGUI:
                 new_width=self.pdf_preview.winfo_width(), 
                 new_height=self.pdf_preview.winfo_height()
             )
+            # Add signatures
+            if self.pdf_page_number:
+                signature_img = Image.open(os.path.join(self.signature_dir, self.signature_selection.get()))
+                for rec in self.signatures[self.pdf_page_number-1]:
+                    x, y, w, h = rec
+
+                    # TODO: Use fixed resize or normal
+                    signature_img_resized = common.resize_image_fixed_scale(
+                        img=signature_img,
+                        new_width=int(w * self.pdf_preview.winfo_width()),
+                        new_height=int(h * self.pdf_preview.winfo_height())
+                    )
+
+                    img = common.merge_images(
+                        bg_img=img,
+                        fg_img=signature_img_resized,
+                        pos=(x, y)
+                    )
+
             # Load to widget
             self.pdf_image = ImageTk.PhotoImage(img)
             self.pdf_preview.configure(image=self.pdf_image)
@@ -239,6 +267,33 @@ class ESignGUI:
         self.select_pdf_file()
 
     def handler_sign_page(self, event = None) -> None:
+        pass
+
+    def handler_clear_page(self, event = None) -> None:
+        self.signatures[self.pdf_page_number-1].clear()
+        # Update page preview
+        self.update_pdf_page_preview()
+
+    def handler_pdf_preview_clicked(self, event: tkinter.Event = None) -> None:
+        if self.pdf:
+            if event.type == tkinter.EventType.ButtonPress:
+                # Read first point of rectangle
+                self.rect_press_cord = event.x, event.y
+            elif event.type == tkinter.EventType.ButtonRelease and self.rect_press_cord is not None:
+                # Read second point of rectangle and calculate its dimensions
+                rectangle = common.rectangle_from_two_points(
+                    p1=(event.x, event.y),
+                    p2=self.rect_press_cord,
+                    width=self.pdf_preview.winfo_width(),
+                    height=self.pdf_preview.winfo_height()
+                )
+                self.signatures[self.pdf_page_number-1].append(rectangle)
+                # Reset first pooint
+                self.rect_press_cord = None
+                # Update page preview
+                self.update_pdf_page_preview()
+
+
         pass
 
     pass
