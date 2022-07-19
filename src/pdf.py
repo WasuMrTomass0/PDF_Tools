@@ -54,11 +54,6 @@ class PDF:
             poppler_path=POPLER_BIN_PATH
         )
 
-        # pages = pdf2image.convert_from_bytes(
-        #     pdf_file=self.get_page(page_num).,
-        #     poppler_path=POPLER_BIN_PATH
-        # )
-
         if len(pages) != 1:
             raise ValueError(f'Invalid number of image pages from pdf! Got {len(pages)} pages')
 
