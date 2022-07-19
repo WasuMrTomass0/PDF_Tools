@@ -15,4 +15,3 @@ def resize_image_fixed_scale(img, new_width, new_height):
     if new_width > 0 and new_height > 0:
         img = img.resize((new_width, new_height))
     return img
-

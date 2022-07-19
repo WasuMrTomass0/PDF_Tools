@@ -15,8 +15,8 @@ class ESignGUI:
     def __init__(self) -> None:
         # Data
         self.pdf_file_path = ''  # type: str
-        self.pdf_page_number = -1  # type: int
-        self.pdf_number_of_pages = -1  # type: int
+        self.pdf_page_number = None  # type: int
+        self.pdf_number_of_pages = None  # type: int
 
         self.pdf = PDF()
 
@@ -27,7 +27,7 @@ class ESignGUI:
         self.pdf_image = None  # type: ImageTk.PhotoImage
 
         # Layout
-        self.width, self.height = 600, 600
+        self.width, self.height = 500, 600
         self.width_min, self.height_min = 400, 300
         self.padx, self.pady = 10, 10
 
@@ -68,7 +68,11 @@ class ESignGUI:
         self.pdf_next_page_button.bind('<Button-1>', self.handler_pdf_next_page_button)
         self.pdf_last_page_button.bind('<Button-1>', self.handler_pdf_last_page_button)
         #
-        self.pdf_preview = ttk.Label(self.window, image=self.pdf_image)
+        self.pdf_preview = ttk.Label(self.window, image=self.pdf_image, anchor='center')
+
+        # Control
+        self.sign_page_button = ttk.Button(self.window, text='Sign page')
+        self.sign_page_button.bind('<Button-1>', self.handler_sign_page)
 
         self.update_widget_position()
         self.window.update()
@@ -90,6 +94,9 @@ class ESignGUI:
             (self.pdf_last_page_button,  (0.71, 0.07), (0.05, 0.05)),
             # 
             (self.pdf_preview, (0.01, 0.13), (0.76, 0.86)),
+            #
+            (self.sign_page_button, (0.77, 0.88), (0.22, 0.11)),
+
         )
         for widget, pos, size in wps:
             pos_x, pos_y = pos
@@ -120,6 +127,11 @@ class ESignGUI:
         if self.pdf_file_path:
             # Clear entry
             self.pdf_selection_entry.delete(0, tkinter.END)
+            # Close opened file
+            self.pdf.close()
+            # Reset values
+            self.pdf_number_of_pages = None
+            self.pdf_page_number = None
             # Update pdf file
             try:
                 # Open pdf file
@@ -127,14 +139,15 @@ class ESignGUI:
                 # Update pages
                 self.pdf_number_of_pages = self.pdf.get_number_of_pages()
                 self.pdf_page_number = 1
-                # Update pdf preview and number
-                self.update_pdf_page_preview()
-                self.update_pdf_page_number()
             except Exception as error:
                 messagebox.showinfo("Error", f'Error while opening pdf file:\n{error}\nPath: {self.pdf_file_path}')
             else:    
                 # Update entry
                 self.pdf_selection_entry.insert(0, self.pdf_file_path)
+            
+            # Update pdf preview and number
+            self.update_pdf_page_preview()
+            self.update_pdf_page_number()
 
     def load_signature_files(self) -> None:
         # List files
@@ -160,54 +173,61 @@ class ESignGUI:
             # Load to widget
             self.signature_image = ImageTk.PhotoImage(img)
             self.signature_preview.configure(image=self.signature_image)
+        else:
+            self.signature_preview.configure(image=None)
 
     def update_pdf_page_number(self) -> None:
-        if self.pdf_page_number > 0 and self.pdf_number_of_pages > 0:
+        if self.pdf_page_number and self.pdf_page_number > 0 and self.pdf_number_of_pages > 0:
             self.pdf_page_number_label.configure(text=f'Page {self.pdf_page_number} / {self.pdf_number_of_pages}')
         else:
             self.pdf_page_number_label.configure(text=f'No pages')
         pass
 
-    def update_pdf_page_preview(self) -> None:
+    def update_pdf_page_preview(self, img = None) -> None:
         # Open and resize image
-        img = Image.open(r'data\work_dir\empty.png')
-        img = common.resize_image_fixed_scale(
-            img=img, 
-            new_width=self.pdf_preview.winfo_width(), 
-            new_height=self.pdf_preview.winfo_height()
-        )
-        # Load to widget
-        self.pdf_image = ImageTk.PhotoImage(img)
-        self.pdf_preview.configure(image=self.pdf_image)
-        # TODO: Implement me!
+        if self.pdf:
+            if img is None:
+                img = self.pdf.get_page_as_image(self.pdf_page_number)
+            img = common.resize_image_fixed_scale(
+                img=img, 
+                new_width=self.pdf_preview.winfo_width(), 
+                new_height=self.pdf_preview.winfo_height()
+            )
+            # Load to widget
+            self.pdf_image = ImageTk.PhotoImage(img)
+            self.pdf_preview.configure(image=self.pdf_image)
+        else:
+            print(f'{self.pdf = } \t {bool(self.pdf) = }')
+            self.pdf_image = None
+            self.pdf_preview.configure(image=self.pdf_image)
         pass
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     def handler_pdf_next_page_button(self, event = None) -> None:
         # Increment page number
-        if self.pdf_page_number < self.pdf_number_of_pages:
+        if self.pdf_page_number and self.pdf_page_number < self.pdf_number_of_pages:
             self.pdf_page_number += 1
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
 
     def handler_pdf_prev_page_button(self, event = None) -> None:
         # Decrement page number
-        if self.pdf_page_number > 1:
+        if self.pdf_page_number and self.pdf_page_number > 1:
             self.pdf_page_number -= 1
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
 
     def handler_pdf_first_page_button(self, event = None) -> None:
         # Go to first page
-        if self.pdf_page_number > 1:
+        if self.pdf_page_number and self.pdf_page_number > 1:
             self.pdf_page_number = 1
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
 
     def handler_pdf_last_page_button(self, event = None) -> None:
         # Go to last page
-        if self.pdf_page_number < self.pdf_number_of_pages:
+        if self.pdf_page_number and self.pdf_page_number < self.pdf_number_of_pages:
             self.pdf_page_number = self.pdf_number_of_pages
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
@@ -217,6 +237,9 @@ class ESignGUI:
 
     def handler_select_pdf_file(self, event = None) -> None:
         self.select_pdf_file()
+
+    def handler_sign_page(self, event = None) -> None:
+        pass
 
     pass
 
