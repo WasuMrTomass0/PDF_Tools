@@ -8,8 +8,8 @@ from PIL import ImageTk
 from pdf import PDF
 import common
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
+
+
 class ESignGUI:
 
     def __init__(self) -> None:
@@ -25,7 +25,7 @@ class ESignGUI:
         self.signature_files = []  # type: list
         self.signature_image = None  # type: ImageTk.PhotoImage
         self.pdf_image = None  # type: ImageTk.PhotoImage
-        self.signatures = None  # type: list[list[tuple[float, float, float, float]]]
+        self.signatures = None  # type: list[list[tuple[str, float, float, float, float]]]
         self.rect_press_cord = None  # type: tuple[float, float]
 
         # Layout
@@ -38,7 +38,7 @@ class ESignGUI:
         self.window.geometry(f'{self.width}x{self.height}')
         self.window.minsize(width=self.width_min, height=self.height_min)
         self.window.resizable(False, False)
-        self.window.title(f'Signign PDF file')
+        self.window.title(f'Sign PDF file')
         self.window.bind('<Return>', self.update_widget_position)
 
         self.create_widgets()
@@ -204,12 +204,14 @@ class ESignGUI:
             )
             # Add signatures
             if self.pdf_page_number:
-                signature_img = Image.open(os.path.join(self.signature_dir, self.signature_selection.get()))
-                for rec in self.signatures[self.pdf_page_number-1]:
-                    x, y, w, h = rec
+                for signature_rectangle in self.signatures[self.pdf_page_number-1]:
+                    sign_name, x, y, w, h = signature_rectangle
+
+                    # Load signature
+                    signature_img = Image.open(os.path.join(self.signature_dir, sign_name))
 
                     # TODO: Use fixed resize or normal
-                    signature_img_resized = common.resize_image_fixed_scale(
+                    signature_img = common.resize_image_fixed_scale(
                         img=signature_img,
                         new_width=int(w * self.pdf_preview.winfo_width()),
                         new_height=int(h * self.pdf_preview.winfo_height())
@@ -217,7 +219,7 @@ class ESignGUI:
 
                     img = common.merge_images(
                         bg_img=img,
-                        fg_img=signature_img_resized,
+                        fg_img=signature_img,
                         pos=(x, y)
                     )
 
@@ -287,13 +289,13 @@ class ESignGUI:
                     width=self.pdf_preview.winfo_width(),
                     height=self.pdf_preview.winfo_height()
                 )
-                self.signatures[self.pdf_page_number-1].append(rectangle)
+                self.signatures[self.pdf_page_number-1].append(
+                    (self.signature_selection.get(), *rectangle)
+                )
                 # Reset first pooint
                 self.rect_press_cord = None
                 # Update page preview
                 self.update_pdf_page_preview()
-
-
         pass
 
     pass
