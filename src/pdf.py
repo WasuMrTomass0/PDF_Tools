@@ -1,5 +1,9 @@
 import PyPDF2
 import pdf2image
+import common
+import shutil
+import os
+from reportlab.pdfgen import canvas
 
 
 POPLER_BIN_PATH = 'poppler-22.04.0/Library/bin'
@@ -41,7 +45,8 @@ class PDF:
     def get_page(self, page_num: int):
         if not 0 < page_num <= self.get_number_of_pages():
             raise ValueError(f'Page number ({page_num}) out of range (1 - {self.get_number_of_pages()})')
-        return self.pdf_file_handler.getPage(page_num)
+        page_index = page_num - 1
+        return self.pdf_file_handler.getPage(page_index)
 
     def get_page_as_image(self, page_num: int):
         if not 0 < page_num <= self.get_number_of_pages():
@@ -58,5 +63,80 @@ class PDF:
             raise ValueError(f'Invalid number of image pages from pdf! Got {len(pages)} pages')
 
         return pages[0]
+
+    def sign(self, pdf_signatures_data: "list[list]", overwrite: bool) -> str:
+        # Writer for new pdf document
+        out_pdf = PyPDF2.PdfFileWriter()
+
+        files_to_close = []  # type: list[tuple]
+
+        # Iterate through pages
+        for pdf_page_number in range(1, self.get_number_of_pages()+1):
+            pdf_page = self.get_page(pdf_page_number)
+            page_signatures_data = pdf_signatures_data[pdf_page_number-1]
+
+            # Temp pdf file - ONE page with signatures
+            pdf_signed_page_fname = common.get_tmp_filename(prefix='signed_page_', suffix='.pdf')
+            c = canvas.Canvas(pdf_signed_page_fname, pagesize=pdf_page.cropBox)
+
+            # Iterate though signatures
+            for single_signature_data in page_signatures_data:
+                if single_signature_data:
+                    # Load signature and resize it
+                    signature_img = common.load_signature_image(
+                        signature_data=single_signature_data, 
+                        width=float(pdf_page.cropBox.getWidth()), 
+                        height=float(pdf_page.cropBox.getHeight())
+                    )
+                    # Save signature as file
+                    sign_img_tmp_fname = common.get_tmp_filename(prefix='signature_', suffix='.png')
+                    signature_img.save(sign_img_tmp_fname)
+                    # Draw it onto canvas
+                    _, _, x, y, w, h = single_signature_data
+                    # Convert to int
+                    x = int(x * float(pdf_page.cropBox.getWidth()))
+                    w = int(w * float(pdf_page.cropBox.getWidth()))
+                    y = int((1.0 - y) * float(pdf_page.cropBox.getHeight())) - signature_img.height
+                    h = int(h * float(pdf_page.cropBox.getHeight()))
+                    c.drawImage(sign_img_tmp_fname, x, y, w, h, mask='auto')
+                    # Remove signature file
+                    os.remove(sign_img_tmp_fname)
+
+            c.showPage()
+            c.save()
+
+            # Merge PDF in to original page
+            pdf_signed_page_fh = open(pdf_signed_page_fname, 'rb')
+            pdf_signed_pages = PyPDF2.PdfFileReader(pdf_signed_page_fh)
+            pdf_signed_page = pdf_signed_pages.getPage(0)
+            pdf_signed_page.mediaBox = pdf_page.mediaBox
+            pdf_page.mergePage(pdf_signed_page)
+
+            # Add page to output
+            out_pdf.addPage(pdf_page)
+            # Append fh and fname to close and remove file
+            files_to_close.append((pdf_signed_page_fh, pdf_signed_page_fname))
+
+        # Save new PDF file
+        out_fname = common.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
+        with open(out_fname, 'wb') as out_fh:
+            out_pdf.write(out_fh)
+            del out_pdf
+
+        # Close files
+        for fh, _ in files_to_close:
+            fh.close()
+            
+        # Overwrite origin or create copy
+        destination_path = self.path if overwrite else self.path[::-1].replace('.', '.dengis_', 1)[::-1]
+        shutil.copyfile(out_fname, destination_path)
+
+        # Delete files
+        os.remove(out_fname)
+        for _, fname in files_to_close:
+            os.remove(fname)
+
+        # Return name of new PDF file
+        return destination_path
 
     pass

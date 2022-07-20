@@ -2,6 +2,7 @@ import tkinter
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
+from functools import wraps
 import os
 from PIL import Image
 from PIL import ImageTk
@@ -25,8 +26,11 @@ class ESignGUI:
         self.signature_files = []  # type: list
         self.signature_image = None  # type: ImageTk.PhotoImage
         self.pdf_image = None  # type: ImageTk.PhotoImage
-        self.signatures = None  # type: list[list[tuple[str, float, float, float, float]]]
+        self.pdf_signatures_data = None  # type: list[list[tuple[str, bool, float, float, float, float]]]
         self.rect_press_cord = None  # type: tuple[float, float]
+        self.overwrite_status = None  # type: tkinter.BooleanVar
+        self.signature_fixed_scale = None  # type: tkinter.BooleanVar
+        self.state = tkinter.NORMAL
 
         # Layout
         self.width, self.height = 500, 600
@@ -45,6 +49,7 @@ class ESignGUI:
         self.load_signature_files()
         pass
 
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     def create_widgets(self) -> None:
         # PDF File selection
@@ -75,10 +80,21 @@ class ESignGUI:
         self.pdf_preview.bind('<ButtonRelease-1>', self.handler_pdf_preview_clicked)
 
         # Control
-        self.sign_page_button = ttk.Button(self.window, text='Sign page')
-        self.sign_page_button.bind('<Button-1>', self.handler_sign_page)
+        self.sign_pdf_button = ttk.Button(self.window, text='Sign page')
+        self.sign_pdf_button.bind('<Button-1>', self.handler_sign_pdf)
+        #
         self.clear_page_button = ttk.Button(self.window, text='Clear page')
         self.clear_page_button.bind('<Button-1>', self.handler_clear_page)
+        #
+        self.overwrite_status = tkinter.BooleanVar()
+        self.overwrite_checkbox = ttk.Checkbutton(self.window, text='Overwrite', var=self.overwrite_status)
+        self.overwrite_status.set(True)
+        #
+        self.signature_fixed_scale = tkinter.BooleanVar()
+        self.signature_fixed_scale_checkbox = ttk.Checkbutton(self.window, text='Fixed scale', var=self.signature_fixed_scale)
+        self.signature_fixed_scale.set(True)
+
+        
 
         self.update_widget_position()
         self.window.update()
@@ -101,8 +117,10 @@ class ESignGUI:
             # 
             (self.pdf_preview, (0.01, 0.13), (0.76, 0.86)),
             #
+            (self.signature_fixed_scale_checkbox, (0.77, 0.72), (0.22, 0.05)),
+            (self.overwrite_checkbox, (0.77, 0.76), (0.22, 0.05)),
             (self.clear_page_button, (0.77, 0.82), (0.22, 0.05)),
-            (self.sign_page_button, (0.77, 0.88), (0.22, 0.11)),
+            (self.sign_pdf_button, (0.77, 0.88), (0.22, 0.11)),
 
         )
         for widget, pos, size in wps:
@@ -124,12 +142,12 @@ class ESignGUI:
 
         # Changed with size update
         self.update_signature_preview()
-            
+
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-    def select_pdf_file(self) -> None:
+    def select_pdf_file(self, pdf_file: str = None) -> None:
         # Select file
-        self.pdf_file_path = filedialog.askopenfilename()
+        self.pdf_file_path = filedialog.askopenfilename() if not pdf_file else pdf_file
         # Only if path was selected
         if self.pdf_file_path:
             # Clear entry
@@ -139,7 +157,7 @@ class ESignGUI:
             # Reset values
             self.pdf_number_of_pages = None
             self.pdf_page_number = None
-            self.signatures = None
+            self.pdf_signatures_data = None
             # Update pdf file
             try:
                 # Open pdf file
@@ -147,7 +165,7 @@ class ESignGUI:
                 # Update pages
                 self.pdf_number_of_pages = self.pdf.get_number_of_pages()
                 self.pdf_page_number = 1
-                self.signatures = [list() for _ in range(self.pdf_number_of_pages)]
+                self.clear_all_signatures()
             except Exception as error:
                 messagebox.showinfo("Error", f'Error while opening pdf file:\n{error}\nPath: {self.pdf_file_path}')
             else:    
@@ -204,37 +222,61 @@ class ESignGUI:
             )
             # Add signatures
             if self.pdf_page_number:
-                for signature_rectangle in self.signatures[self.pdf_page_number-1]:
-                    sign_name, x, y, w, h = signature_rectangle
-
-                    # Load signature
-                    signature_img = Image.open(os.path.join(self.signature_dir, sign_name))
-
-                    # TODO: Use fixed resize or normal
-                    signature_img = common.resize_image_fixed_scale(
-                        img=signature_img,
-                        new_width=int(w * self.pdf_preview.winfo_width()),
-                        new_height=int(h * self.pdf_preview.winfo_height())
+                for signature_data in self.pdf_signatures_data[self.pdf_page_number-1]:
+                    _, _, x, y, _, _ = signature_data
+                    # Load signature and resize it
+                    signature_img = common.load_signature_image(
+                        signature_data=signature_data, 
+                        width=self.pdf_preview.winfo_width(), 
+                        height=self.pdf_preview.winfo_height()
                     )
-
+                    # Merge signature image and page image
                     img = common.merge_images(
                         bg_img=img,
                         fg_img=signature_img,
                         pos=(x, y)
                     )
-
             # Load to widget
             self.pdf_image = ImageTk.PhotoImage(img)
             self.pdf_preview.configure(image=self.pdf_image)
         else:
-            print(f'{self.pdf = } \t {bool(self.pdf) = }')
             self.pdf_image = None
             self.pdf_preview.configure(image=self.pdf_image)
+        pass
+
+    def clear_all_signatures(self) -> None:
+        self.pdf_signatures_data = [list() for _ in range(self.pdf_number_of_pages)]
+
+    def sign_pdf(self) -> None:
+        if not self.pdf:
+            messagebox.showinfo("Info", f'Select PDF!')
+            return
+
+        if not any(self.pdf_signatures_data):
+            messagebox.showinfo("Info", f'Add signatures to document!')
+            return
+
+        # Disable handlers
+        self.state = tkinter.DISABLED
+        self.sign_pdf_button['state'] = tkinter.DISABLED
+
+        # Sign pdf file - read (new) path to signed pdf
+        path = self.pdf.sign(pdf_signatures_data=self.pdf_signatures_data, overwrite=self.overwrite_status.get())
+
+        # Reload file and clear existing signatures
+        self.clear_all_signatures()
+        self.select_pdf_file(path)
+
+        # Enable handlers
+        self.state = tkinter.NORMAL
+        self.sign_pdf_button['state'] = tkinter.NORMAL
         pass
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     def handler_pdf_next_page_button(self, event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
         # Increment page number
         if self.pdf_page_number and self.pdf_page_number < self.pdf_number_of_pages:
             self.pdf_page_number += 1
@@ -242,6 +284,8 @@ class ESignGUI:
             self.update_pdf_page_number()
 
     def handler_pdf_prev_page_button(self, event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
         # Decrement page number
         if self.pdf_page_number and self.pdf_page_number > 1:
             self.pdf_page_number -= 1
@@ -249,6 +293,8 @@ class ESignGUI:
             self.update_pdf_page_number()
 
     def handler_pdf_first_page_button(self, event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
         # Go to first page
         if self.pdf_page_number and self.pdf_page_number > 1:
             self.pdf_page_number = 1
@@ -256,6 +302,8 @@ class ESignGUI:
             self.update_pdf_page_number()
 
     def handler_pdf_last_page_button(self, event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
         # Go to last page
         if self.pdf_page_number and self.pdf_page_number < self.pdf_number_of_pages:
             self.pdf_page_number = self.pdf_number_of_pages
@@ -266,17 +314,25 @@ class ESignGUI:
         self.update_signature_preview()
 
     def handler_select_pdf_file(self, event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
         self.select_pdf_file()
 
-    def handler_sign_page(self, event = None) -> None:
-        pass
+    def handler_sign_pdf(self, event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
+        self.sign_pdf()
 
     def handler_clear_page(self, event = None) -> None:
-        self.signatures[self.pdf_page_number-1].clear()
+        if self.state == tkinter.DISABLED:
+            return
+        self.pdf_signatures_data[self.pdf_page_number-1].clear()
         # Update page preview
         self.update_pdf_page_preview()
 
     def handler_pdf_preview_clicked(self, event: tkinter.Event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
         if self.pdf:
             if event.type == tkinter.EventType.ButtonPress:
                 # Read first point of rectangle
@@ -289,15 +345,16 @@ class ESignGUI:
                     width=self.pdf_preview.winfo_width(),
                     height=self.pdf_preview.winfo_height()
                 )
-                self.signatures[self.pdf_page_number-1].append(
-                    (self.signature_selection.get(), *rectangle)
+                signature_img_path = os.path.join(self.signature_dir, self.signature_selection.get())
+                self.pdf_signatures_data[self.pdf_page_number-1].append(
+                    (signature_img_path, self.signature_fixed_scale.get(), *rectangle)
                 )
                 # Reset first pooint
                 self.rect_press_cord = None
                 # Update page preview
                 self.update_pdf_page_preview()
         pass
-
+    
     pass
 
 app = ESignGUI()

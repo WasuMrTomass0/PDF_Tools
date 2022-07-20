@@ -1,6 +1,6 @@
 from multiprocessing.sharedctypes import Value
 import tempfile
-from PIL.Image import Image
+from PIL import Image
 
 
 def resize_image_fixed_scale(img, new_width, new_height):
@@ -20,8 +20,30 @@ def resize_image_fixed_scale(img, new_width, new_height):
     return img
 
 
-def get_tmp_filename(suffix: str = ".pdf", temp_dir: str = 'data/work_dir/temp'):
-    with tempfile.NamedTemporaryFile(suffix=suffix, dir=temp_dir) as fh:
+def resize_image(img, new_width, new_height):
+    # Resize
+    if new_width > 0 and new_height > 0:
+        img = img.resize((new_width, new_height))
+    return img
+
+
+def load_signature_image(signature_data: "list[list]", width: int, height: int) -> Image.Image:
+    sign_path, resize_format, _, _, w, h = signature_data
+    # Load signature
+    with Image.open(sign_path) as signature_img:
+        # Resize signature
+        resize_function = resize_image_fixed_scale if resize_format else resize_image
+        signature_img = resize_function(
+            img=signature_img,
+            new_width=int(w * width),
+            new_height=int(h * height)
+        )
+        return signature_img
+
+
+
+def get_tmp_filename(suffix: str = ".pdf", temp_dir: str = 'data/work_dir/temp', prefix: str = ''):
+    with tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix, dir=temp_dir) as fh:
         return fh.name
 
 
@@ -36,7 +58,7 @@ def rectangle_from_two_points(p1: "tuple[int, int]", p2: "tuple[int, int]", widt
     return min_x / width, min_y / height, abs(x1 - x2) / width, abs(y1 - y2) / height    
 
 
-def merge_images(bg_img: Image, fg_img: Image, pos: tuple) -> Image:
+def merge_images(bg_img: Image.Image, fg_img: Image.Image, pos: tuple) -> Image.Image:
     # Convert position
     if len(pos) != 2:
         raise ValueError(f'Position is invalid. Expected (x, y). Got {pos}')
