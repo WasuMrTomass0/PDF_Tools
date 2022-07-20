@@ -1,2 +1,3 @@
 src/__pycache__
-poppler-22.04.0
+data/poppler/*
+ref

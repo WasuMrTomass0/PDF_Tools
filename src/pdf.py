@@ -5,8 +5,7 @@ import shutil
 import os
 from reportlab.pdfgen import canvas
 
-
-POPLER_BIN_PATH = 'poppler-22.04.0/Library/bin'
+import settings
 
 
 class PDF:
@@ -56,7 +55,7 @@ class PDF:
             pdf_path=self.path, 
             first_page=page_num,
             last_page=page_num,
-            poppler_path=POPLER_BIN_PATH
+            poppler_path=settings.POPPLER_BIN_PATH
         )
 
         if len(pages) != 1:

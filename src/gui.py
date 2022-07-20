@@ -1,13 +1,16 @@
+import shutil
 import tkinter
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
-from functools import wraps
-import os
+import PIL
 from PIL import Image
 from PIL import ImageTk
 from pdf import PDF
+import os
+
 import common
+import settings
 
 
 
@@ -21,8 +24,6 @@ class ESignGUI:
 
         self.pdf = PDF()
 
-        self.work_dir = 'C:/Projekty/eSign/data/work_dir'  # type: str
-        self.signature_dir = 'C:/Projekty/eSign/data/signatures'  # type: str
         self.signature_files = []  # type: list
         self.signature_image = None  # type: ImageTk.PhotoImage
         self.pdf_image = None  # type: ImageTk.PhotoImage
@@ -80,7 +81,7 @@ class ESignGUI:
         self.pdf_preview.bind('<ButtonRelease-1>', self.handler_pdf_preview_clicked)
 
         # Control
-        self.sign_pdf_button = ttk.Button(self.window, text='Sign page')
+        self.sign_pdf_button = ttk.Button(self.window, text='Sign document')
         self.sign_pdf_button.bind('<Button-1>', self.handler_sign_pdf)
         #
         self.clear_page_button = ttk.Button(self.window, text='Clear page')
@@ -178,8 +179,8 @@ class ESignGUI:
 
     def load_signature_files(self) -> None:
         # List files
-        self.signature_files = os.listdir(path=self.signature_dir)
-        # Update wodget
+        self.signature_files = os.listdir(path=settings.SIGNATURES_DIR)
+        # Update widget
         self.signature_selection['values'] = self.signature_files
         if len(self.signature_files) > 0:
             self.signature_selection.current(0)
@@ -188,18 +189,28 @@ class ESignGUI:
 
     def update_signature_preview(self) -> None:
         # Update image preview
-        img_path = os.path.join(self.signature_dir, self.signature_selection.get())
+        img_path = os.path.join(settings.SIGNATURES_DIR, self.signature_selection.get())
         if img_path and os.path.isfile(img_path):
             # Read and resize image
-            img = Image.open(img_path)
-            img = common.resize_image_fixed_scale(
-                img=img, 
-                new_width=self.signature_preview.winfo_width(), 
-                new_height=self.signature_preview.winfo_height()
-            )
-            # Load to widget
-            self.signature_image = ImageTk.PhotoImage(img)
-            self.signature_preview.configure(image=self.signature_image)
+            try:
+                img = Image.open(img_path)
+            except PIL.UnidentifiedImageError:
+                # Move invalid file
+                shutil.move(
+                    img_path, 
+                    os.path.join(settings.INVALID_SIGNATURES_DIR, self.signature_selection.get())
+                )
+                self.load_signature_files()
+            else:
+                # Load correct image file
+                img = common.resize_image_fixed_scale(
+                    img=img, 
+                    new_width=self.signature_preview.winfo_width(), 
+                    new_height=self.signature_preview.winfo_height()
+                )
+                # Load to widget
+                self.signature_image = ImageTk.PhotoImage(img)
+                self.signature_preview.configure(image=self.signature_image)
         else:
             self.signature_preview.configure(image=None)
 
@@ -334,6 +345,10 @@ class ESignGUI:
         if self.state == tkinter.DISABLED:
             return
         if self.pdf:
+            if not self.signature_files and event.type == tkinter.EventType.ButtonPress:
+                messagebox.showinfo("Error", f'Add signatures to "{settings.SIGNATURES_DIR}"')
+                return
+
             if event.type == tkinter.EventType.ButtonPress:
                 # Read first point of rectangle
                 self.rect_press_cord = event.x, event.y
@@ -345,7 +360,7 @@ class ESignGUI:
                     width=self.pdf_preview.winfo_width(),
                     height=self.pdf_preview.winfo_height()
                 )
-                signature_img_path = os.path.join(self.signature_dir, self.signature_selection.get())
+                signature_img_path = os.path.join(settings.SIGNATURES_DIR, self.signature_selection.get())
                 self.pdf_signatures_data[self.pdf_page_number-1].append(
                     (signature_img_path, self.signature_fixed_scale.get(), *rectangle)
                 )

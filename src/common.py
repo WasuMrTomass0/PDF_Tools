@@ -1,6 +1,8 @@
-from multiprocessing.sharedctypes import Value
-import tempfile
 from PIL import Image
+import tempfile
+import os
+
+import settings
 
 
 def resize_image_fixed_scale(img, new_width, new_height):
@@ -42,7 +44,7 @@ def load_signature_image(signature_data: "list[list]", width: int, height: int) 
 
 
 
-def get_tmp_filename(suffix: str = ".pdf", temp_dir: str = 'data/work_dir/temp', prefix: str = ''):
+def get_tmp_filename(suffix: str = ".pdf", temp_dir: str = settings.TEMP_DIR, prefix: str = ''):
     with tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix, dir=temp_dir) as fh:
         return fh.name
 
