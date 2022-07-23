@@ -1,3 +1,4 @@
+from genericpath import isfile
 import shutil
 import tkinter
 from tkinter import filedialog
@@ -95,7 +96,11 @@ class ESignGUI:
         self.signature_fixed_scale_checkbox = ttk.Checkbutton(self.window, text='Fixed scale', var=self.signature_fixed_scale)
         self.signature_fixed_scale.set(True)
 
-        
+        # 
+        self.add_signature_button = ttk.Button(self.window, text='Add signature')
+        self.add_signature_button.bind('<Button-1>', self.handler_add_signature)
+        self.del_signature_button = ttk.Button(self.window, text='Delete signature')
+        self.del_signature_button.bind('<Button-1>', self.handler_del_signature)
 
         self.update_widget_position()
         self.window.update()
@@ -107,8 +112,10 @@ class ESignGUI:
             (self.pdf_selection_entry,  (0.01, 0.01), (0.75, 0.05)),
             (self.pdf_selection_button, (0.77, 0.01), (0.22, 0.05)),
             #
-            (self.signature_selection, (0.77, 0.07), (0.22, 0.05)),
-            (self.signature_preview,   (0.77, 0.13), (0.22, 0.1)),
+            (self.signature_selection,  (0.77, 0.07), (0.22, 0.05)),
+            (self.signature_preview,    (0.77, 0.13), (0.22, 0.1)),
+            (self.add_signature_button, (0.77, 0.24), (0.22, 0.05)),
+            (self.del_signature_button, (0.77, 0.30), (0.22, 0.05)),
             # 
             (self.pdf_first_page_button, (0.01, 0.07), (0.05, 0.05)),
             (self.pdf_prev_page_button,  (0.06, 0.07), (0.20, 0.05)),
@@ -122,6 +129,7 @@ class ESignGUI:
             (self.overwrite_checkbox, (0.77, 0.76), (0.22, 0.05)),
             (self.clear_page_button, (0.77, 0.82), (0.22, 0.05)),
             (self.sign_pdf_button, (0.77, 0.88), (0.22, 0.11)),
+
 
         )
         for widget, pos, size in wps:
@@ -145,6 +153,24 @@ class ESignGUI:
         self.update_signature_preview()
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+    def select_signature_file(self) -> None:
+        self.selected_path = filedialog.askopenfilename()
+        # 
+        if self.selected_path:
+            new_fname = os.path.join(settings.SIGNATURES_DIR, os.path.basename(self.selected_path))
+            while os.path.isfile(new_fname):
+                new_fname = new_fname[::-1].replace('.', '._1', 1)[::-1]
+            shutil.copy(src=self.selected_path, dst=new_fname)
+            self.load_signature_files()
+        pass
+
+    def delete_signature_file(self) -> None:
+        selected = self.signature_selection.get()
+        if selected:
+            os.remove(os.path.join(settings.SIGNATURES_DIR, selected))
+            self.load_signature_files()
+        pass
 
     def select_pdf_file(self, pdf_file: str = None) -> None:
         # Select file
@@ -184,8 +210,9 @@ class ESignGUI:
         self.signature_selection['values'] = self.signature_files
         if len(self.signature_files) > 0:
             self.signature_selection.current(0)
-            self.update_signature_preview()
-        pass
+        else:
+            self.signature_selection.set('')
+        self.update_signature_preview()
 
     def update_signature_preview(self) -> None:
         # Update image preview
@@ -212,7 +239,8 @@ class ESignGUI:
                 self.signature_image = ImageTk.PhotoImage(img)
                 self.signature_preview.configure(image=self.signature_image)
         else:
-            self.signature_preview.configure(image=None)
+            self.signature_image = None
+            self.signature_preview.configure(image=self.signature_image)
 
     def update_pdf_page_number(self) -> None:
         if self.pdf_page_number and self.pdf_page_number > 0 and self.pdf_number_of_pages > 0:
@@ -361,6 +389,11 @@ class ESignGUI:
                     height=self.pdf_preview.winfo_height()
                 )
                 signature_img_path = os.path.join(settings.SIGNATURES_DIR, self.signature_selection.get())
+                
+                if not signature_img_path or not os.path.isfile(signature_img_path):
+                    messagebox.showinfo("Error", f'Signature file invalid')
+                    return
+
                 self.pdf_signatures_data[self.pdf_page_number-1].append(
                     (signature_img_path, self.signature_fixed_scale.get(), *rectangle)
                 )
@@ -369,9 +402,17 @@ class ESignGUI:
                 # Update page preview
                 self.update_pdf_page_preview()
         pass
+
+    def handler_add_signature(self, event: tkinter.Event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
+        self.select_signature_file()
+        pass
+    
+    def handler_del_signature(self, event: tkinter.Event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
+        self.delete_signature_file()
+        pass
     
     pass
-
-app = ESignGUI()
-
-app.window.mainloop()
