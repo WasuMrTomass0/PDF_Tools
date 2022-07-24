@@ -5,7 +5,8 @@ GUI Application that let's you quickly sign pdf files
 ## Instalation
 
 1. Install `requirements.txt` with pip
-2. Windows users must download [poppler](https://github.com/oschwartz10612/poppler-windows/releases/) and unzip it it `data/poppler` directory
+2. Windows users must download [poppler (v22.04.0-0
+)](https://github.com/oschwartz10612/poppler-windows/releases/) and unzip it it `data/poppler` directory
     ```
     my-app/
     ├─ data/

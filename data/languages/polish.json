@@ -16,5 +16,6 @@
     "select_pdf": "Wybierz pdf",
     "add_signatures_to_document": "Dodaj podpis do dokumentu",
     "add_signatures_to": "Dodaj podpis do",
-    "signature_file_is_invalid": "Podpis"
+    "signature_file_is_invalid": "Podpis",
+    "sure_to_delete": "Czy na pewno chcesz usunąć podpis"
 }

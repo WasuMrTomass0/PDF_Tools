@@ -174,8 +174,13 @@ class ESignGUI:
     def delete_signature_file(self) -> None:
         selected = self.signature_selection.get()
         if selected:
-            os.remove(os.path.join(settings.SIGNATURES_DIR, selected))
-            self.load_signature_files()
+            confirmation = messagebox.askokcancel(
+                title=lang.info,
+                message=f'{lang.sure_to_delete} {selected}?'
+            )
+            if confirmation:
+                os.remove(os.path.join(settings.SIGNATURES_DIR, selected))
+                self.load_signature_files()
         pass
 
     def select_pdf_file(self, pdf_file: str = None) -> None:
