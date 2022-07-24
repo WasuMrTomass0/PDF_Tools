@@ -1,0 +1,20 @@
+{
+    "prev_page": "Poprzednia",
+    "next_page": "Następna",
+    "no_pages": "Brak stron",
+    "sign_document": "Zapisz",
+    "clear_page": "Wyczyść stronę",
+    "overwrite": "Nadpisz",
+    "fixed_scale": "Proporcje",
+    "add_signature": "Dodaj podpis",
+    "delete_signature": "Usuń podpis",
+    "error": "Błąd",
+    "error_opening_pdf_file": "Błąd podczas otwierania pliku pdf",
+    "path": "Ścieżka",
+    "page": "Strona",
+    "info": "Informacja",
+    "select_pdf": "Wybierz pdf",
+    "add_signatures_to_document": "Dodaj podpis do dokumentu",
+    "add_signatures_to": "Dodaj podpis do",
+    "signature_file_is_invalid": "Podpis"
+}
