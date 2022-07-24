@@ -13,7 +13,7 @@ import os
 import common
 import settings
 from language import lang
-
+from logger import log_exceptions, logger
 
 
 class ESignGUI:
@@ -324,6 +324,7 @@ class ESignGUI:
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+    @log_exceptions
     def handler_pdf_next_page_button(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
@@ -333,6 +334,7 @@ class ESignGUI:
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
 
+    @log_exceptions
     def handler_pdf_prev_page_button(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
@@ -342,6 +344,7 @@ class ESignGUI:
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
 
+    @log_exceptions
     def handler_pdf_first_page_button(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
@@ -351,6 +354,7 @@ class ESignGUI:
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
 
+    @log_exceptions
     def handler_pdf_last_page_button(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
@@ -360,19 +364,23 @@ class ESignGUI:
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
 
+    @log_exceptions
     def handler_update_signature_preview(self, event = None) -> None:
         self.update_signature_preview()
 
+    @log_exceptions
     def handler_select_pdf_file(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
         self.select_pdf_file()
 
+    @log_exceptions
     def handler_sign_pdf(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
         self.sign_pdf()
 
+    @log_exceptions
     def handler_clear_page(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
@@ -380,6 +388,7 @@ class ESignGUI:
         # Update page preview
         self.update_pdf_page_preview()
 
+    @log_exceptions
     def handler_pdf_preview_clicked(self, event: tkinter.Event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
@@ -414,12 +423,14 @@ class ESignGUI:
                 self.update_pdf_page_preview()
         pass
 
+    @log_exceptions
     def handler_add_signature(self, event: tkinter.Event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
         self.select_signature_file()
         pass
     
+    @log_exceptions
     def handler_del_signature(self, event: tkinter.Event = None) -> None:
         if self.state == tkinter.DISABLED:
             return

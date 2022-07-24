@@ -1,3 +1,5 @@
+from genericpath import isfile
+from tkinter import Image
 import PyPDF2
 import pdf2image
 import common
@@ -6,6 +8,7 @@ import os
 from reportlab.pdfgen import canvas
 
 import settings
+from logger import logger
 
 
 class PDF:
@@ -91,13 +94,13 @@ class PDF:
                     sign_img_tmp_fname = common.get_tmp_filename(prefix='signature_', suffix='.png')
                     signature_img.save(sign_img_tmp_fname)
                     # Draw it onto canvas
-                    _, _, x, y, w, h = single_signature_data
+                    _, _, x, y, _, _ = single_signature_data
                     # Convert to int
                     x = int(x * float(pdf_page.cropBox.getWidth()))
-                    w = int(w * float(pdf_page.cropBox.getWidth()))
+                    w = signature_img.width
                     y = int((1.0 - y) * float(pdf_page.cropBox.getHeight())) - signature_img.height
-                    h = int(h * float(pdf_page.cropBox.getHeight()))
-                    c.drawImage(sign_img_tmp_fname, x, y, w, h, mask='auto')
+                    h = signature_img.height
+                    c.drawImage(sign_img_tmp_fname, x, y, mask='auto')
                     # Remove signature file
                     os.remove(sign_img_tmp_fname)
 
@@ -128,6 +131,8 @@ class PDF:
             
         # Overwrite origin or create copy
         destination_path = self.path if overwrite else self.path[::-1].replace('.', '.dengis_', 1)[::-1]
+        while os.path.isfile(destination_path):
+            destination_path = destination_path.replace('.', '_1.')
         shutil.copyfile(out_fname, destination_path)
 
         # Delete files

@@ -12,6 +12,9 @@ LANGUAGES_DIR = os.path.normpath(os.path.join(DATA_DIR, 'languages'))
 
 POPPLER_BIN_PATH = os.path.normpath(os.path.join(POPPLER_DIR, 'Library', 'bin'))
 
+LOG_FILE_NAME = 'log.log'
+LOG_FILE_PATH = os.path.normpath(os.path.join(DATA_DIR, LOG_FILE_NAME))
+
 # Language json file names
 LANG_POLISH = 'polish.json'
 # LANG_ENGLISH = 'english.json'

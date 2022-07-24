@@ -30,6 +30,31 @@ def create_directories() -> None:
     pass
 
 
+def get_new_dimensions_fixed_scale(old_dim: "tuple[int, int]", new_dim: "tuple[int, int]") -> "tuple[int, int]":
+    """Calculate new dimension to be in fixed scale and not exceed rectangle
+
+    Args:
+        old_dim (tuple[int, int]): Old dimensions
+        new_dim (tuple[int, int]): New dimension not in fixed scale
+
+    Returns:
+        tuple[int, int]: New dimension in fixed scale
+    """
+    old_width, old_height = old_dim
+    new_width, new_height = new_dim
+    # Calculate scale
+    scale_width = new_width / old_width
+    scale_height = new_height / old_height
+    if scale_width < scale_height:
+        scale = scale_width
+    else:
+        scale = scale_height
+    # Calculate new size
+    new_width = int(old_width * scale)
+    new_height = int(old_height * scale)
+    return new_width, new_height
+
+
 def resize_image_fixed_scale(img, new_width: int, new_height: int):
     """Resize image in fixed scale ratio
 
@@ -41,16 +66,10 @@ def resize_image_fixed_scale(img, new_width: int, new_height: int):
     Returns:
         _type_: Resized image
     """
-    # Calculate scale
-    scale_width = new_width / img.width
-    scale_height = new_height / img.height
-    if scale_width < scale_height:
-        scale = scale_width
-    else:
-        scale = scale_height
-    # Calculate new size
-    new_width = int(img.width * scale)
-    new_height = int(img.height * scale)
+    new_width, new_height = get_new_dimensions_fixed_scale(
+        old_dim=(img.width, img.height),
+        new_dim=(new_width, new_height)
+     )
     # Resize
     if new_width > 0 and new_height > 0:
         img = img.resize((new_width, new_height))
@@ -73,7 +92,7 @@ def resize_image(img, new_width: int, new_height: int):
     return img
 
 
-def load_signature_image(signature_data: "list[list]", width: int, height: int) -> Image.Image:
+def load_signature_image(signature_data: "list[list]", width: int = None, height: int = None) -> Image.Image:
     """Load signature image and resize it
 
     Args:
@@ -86,15 +105,16 @@ def load_signature_image(signature_data: "list[list]", width: int, height: int) 
     """
     sign_path, resize_format, _, _, w, h = signature_data
     # Load signature
-    with Image.open(sign_path) as signature_img:
-        # Resize signature
+    signature_img = Image.open(sign_path).copy()
+    if width and height:
+        # Resize signature if dimensions were given
         resize_function = resize_image_fixed_scale if resize_format else resize_image
         signature_img = resize_function(
             img=signature_img,
             new_width=int(w * width),
             new_height=int(h * height)
         )
-        return signature_img
+    return signature_img
 
 
 
