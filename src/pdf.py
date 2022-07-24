@@ -86,8 +86,8 @@ class PDF:
                 if single_signature_data:
                     # Load signature and resize it
                     signature_img = common.load_signature_image(
-                        signature_data=single_signature_data, 
-                        width=float(pdf_page.cropBox.getWidth()), 
+                        signature_data=single_signature_data,
+                        width=float(pdf_page.cropBox.getWidth()),
                         height=float(pdf_page.cropBox.getHeight())
                     )
                     # Save signature as file
@@ -100,7 +100,7 @@ class PDF:
                     w = signature_img.width
                     y = int((1.0 - y) * float(pdf_page.cropBox.getHeight())) - signature_img.height
                     h = signature_img.height
-                    c.drawImage(sign_img_tmp_fname, x, y, mask='auto')
+                    c.drawImage(sign_img_tmp_fname, x, y, w, h, mask='auto')
                     # Remove signature file
                     os.remove(sign_img_tmp_fname)
 
