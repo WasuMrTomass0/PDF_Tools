@@ -23,3 +23,7 @@ GUI Application that let's you quickly sign pdf files
     ├─ README.md
     ```
 3. Add your signatures to `data/signatures` - you can use transparent background!
+
+---
+
+TODO: Reformat signature image loader - now it loads image, resizes it to get fixed ratio dimensions - and then it read original image into pdf
