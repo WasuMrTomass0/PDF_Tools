@@ -90,9 +90,6 @@ class PDF:
                         width=float(pdf_page.cropBox.getWidth()),
                         height=float(pdf_page.cropBox.getHeight())
                     )
-                    # Save signature as file
-                    sign_img_tmp_fname = common.get_tmp_filename(prefix='signature_', suffix='.png')
-                    signature_img.save(sign_img_tmp_fname)
                     # Draw it onto canvas
                     _, _, x, y, _, _ = single_signature_data
                     # Convert to int
@@ -100,9 +97,7 @@ class PDF:
                     w = signature_img.width
                     y = int((1.0 - y) * float(pdf_page.cropBox.getHeight())) - signature_img.height
                     h = signature_img.height
-                    c.drawImage(sign_img_tmp_fname, x, y, w, h, mask='auto')
-                    # Remove signature file
-                    os.remove(sign_img_tmp_fname)
+                    c.drawImage(single_signature_data[0], x, y, w, h, mask='auto')
 
             c.showPage()
             c.save()
