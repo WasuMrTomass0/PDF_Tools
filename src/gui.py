@@ -1,4 +1,4 @@
-from genericpath import isfile
+from datetime import datetime
 import shutil
 import tkinter
 from tkinter import filedialog
@@ -36,17 +36,21 @@ class ESignGUI:
         self.state = tkinter.NORMAL
 
         # Layout
-        self.width, self.height = 500, 600
-        self.width_min, self.height_min = 400, 300
+        self.WIDTH_INIT, self.INIT_HEIGHT = 500, 600
+        self.width, self.height = self.WIDTH_INIT, self.INIT_HEIGHT
+        self.WIDTH_MIN, self.HEIGHT_MIN = 400, 300
         self.padx, self.pady = 10, 10
+        self.resize_timestamp = datetime.now()
 
         # Window
         self.window = tkinter.Tk()
         self.window.geometry(f'{self.width}x{self.height}')
-        self.window.minsize(width=self.width_min, height=self.height_min)
-        self.window.resizable(False, False)
+        self.window.minsize(width=self.WIDTH_MIN, height=self.HEIGHT_MIN)
+        # self.window.resizable(False, False)
         self.window.title(f'eSign')
-        self.window.bind('<Return>', self.update_widget_position)
+        self.window.bind(f'<Configure>', self.resize_window)
+        # self.window.bind(f'<Enter>', self.resize_window)
+        # self.window.bind(f'<Leave>', self.resize_window)
 
         try:
             common.init_check()
@@ -62,6 +66,7 @@ class ESignGUI:
     def create_widgets(self) -> None:
         # PDF File selection
         self.pdf_selection_entry = ttk.Entry(self.window)
+        # self.pdf_selection_entry.bind('<Enter>', self.handler_pdf_selection_entry)
         self.pdf_selection_button = ttk.Button(self.window, text=lang.select_pdf)
         self.pdf_selection_button.bind('<Button-1>', self.handler_select_pdf_file)
 
@@ -112,7 +117,28 @@ class ESignGUI:
         self.window.update()
         pass
 
+    def resize_window(self, event = None) -> None:
+        w = self.window.winfo_width()
+        h = self.window.winfo_height()
+        time_passed = (datetime.now() - self.resize_timestamp).microseconds > int(0.5 * 1e6)
+        if time_passed and (w != self.width or h != self.height):
+            # Scale
+            w, h = common.get_new_dimensions_fixed_scale(
+                old_dim=(self.WIDTH_INIT, self.INIT_HEIGHT),
+                new_dim=(w, h)
+            )
+            # Saturate
+            if w < self.WIDTH_MIN or h < self.HEIGHT_MIN:
+                w, h = self.WIDTH_MIN, self.HEIGHT_MIN
+            # Save new dimensions and update window size
+            self.width, self.height = w, h
+            self.window.geometry(f'{self.width}x{self.height}')
+            # 
+            self.update_widget_position()
+            
+
     def update_widget_position(self) -> None:
+
         wps = (
             # (widget, pos, size)
             (self.pdf_selection_entry,  (0.01, 0.01), (0.75, 0.05)),
@@ -135,7 +161,6 @@ class ESignGUI:
             (self.overwrite_checkbox, (0.77, 0.76), (0.22, 0.05)),
             (self.clear_page_button, (0.77, 0.82), (0.22, 0.05)),
             (self.sign_pdf_button, (0.77, 0.88), (0.22, 0.11)),
-
 
         )
         for widget, pos, size in wps:
@@ -373,6 +398,13 @@ class ESignGUI:
         if self.state == tkinter.DISABLED:
             return
         self.select_pdf_file()
+
+    @log_exceptions
+    def handler_pdf_selection_entry(self, event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
+        print(event)
+        # self.select_pdf_file()
 
     @log_exceptions
     def handler_sign_pdf(self, event = None) -> None:

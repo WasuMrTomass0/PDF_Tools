@@ -125,9 +125,9 @@ class PDF:
             fh.close()
             
         # Overwrite origin or create copy
-        destination_path = self.path if overwrite else self.path[::-1].replace('.', '.dengis_', 1)[::-1]
+        destination_path = common.add_suffix_to_path(path=self.path, suffix='_signed')
         while os.path.isfile(destination_path):
-            destination_path = destination_path.replace('.', '_1.')
+            destination_path = common.add_suffix_to_path(path=self.path, suffix='_')
         shutil.copyfile(out_fname, destination_path)
 
         # Delete files

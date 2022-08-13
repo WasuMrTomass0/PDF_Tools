@@ -117,6 +117,15 @@ def load_signature_image(signature_data: "list[list]", width: int = None, height
     return signature_img
 
 
+def add_suffix_to_path(path: str, suffix: str) -> str:
+    if '.' not in path:
+        return path + suffix
+    
+    parts = path.split('.')
+    extension = parts[-1]
+    path = '.'.join(parts[:-1])
+    return path + suffix + '.' + extension
+
 
 def get_tmp_filename(suffix: str = ".pdf", temp_dir: str = settings.TEMP_DIR, prefix: str = ''):
     """Create temporary file name
