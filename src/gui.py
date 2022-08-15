@@ -14,6 +14,7 @@ import common
 import settings
 from language import lang
 from logger import log_exceptions, logger
+from dynamic_settings import DynamicSettings
 
 
 class ESignGUI:
@@ -36,11 +37,9 @@ class ESignGUI:
         self.state = tkinter.NORMAL
 
         # Layout
-        self.WIDTH_INIT, self.INIT_HEIGHT = 500, 600
-        self.width, self.height = self.WIDTH_INIT, self.INIT_HEIGHT
-        self.WIDTH_MIN, self.HEIGHT_MIN = 400, 300
-        self.padx, self.pady = 10, 10
-        self.resize_timestamp = datetime.now()
+        self.WIDTH_INIT, self.INIT_HEIGHT = settings.WINDOW_INIT_DIMENSION
+        self.width, self.height = DynamicSettings.get_window_dimension()
+        self.WIDTH_MIN, self.HEIGHT_MIN = settings.WINDOW_MINIMUM_DIMENSION
 
         # Window
         self.window = tkinter.Tk()
@@ -49,8 +48,6 @@ class ESignGUI:
         # self.window.resizable(False, False)
         self.window.title(f'eSign')
         self.window.bind(f'<Configure>', self.resize_window)
-        # self.window.bind(f'<Enter>', self.resize_window)
-        # self.window.bind(f'<Leave>', self.resize_window)
 
         try:
             common.init_check()
@@ -120,8 +117,15 @@ class ESignGUI:
     def resize_window(self, event = None) -> None:
         w = self.window.winfo_width()
         h = self.window.winfo_height()
-        time_passed = (datetime.now() - self.resize_timestamp).microseconds > int(0.5 * 1e6)
-        if time_passed and (w != self.width or h != self.height):
+
+        # Init resize. On start w, h = (1, 1)
+        if w == 1 and h == 1:
+            w, h = self.width, self.height
+            init_resize = True
+        else:
+            init_resize = False
+
+        if init_resize or (w != self.width or h != self.height):
             # Scale
             w, h = common.get_new_dimensions_fixed_scale(
                 old_dim=(self.WIDTH_INIT, self.INIT_HEIGHT),
@@ -132,10 +136,10 @@ class ESignGUI:
                 w, h = self.WIDTH_MIN, self.HEIGHT_MIN
             # Save new dimensions and update window size
             self.width, self.height = w, h
+            DynamicSettings.set_window_dimension(dim=(self.width, self.height))
             self.window.geometry(f'{self.width}x{self.height}')
             # 
             self.update_widget_position()
-            
 
     def update_widget_position(self) -> None:
 

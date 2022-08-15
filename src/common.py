@@ -1,5 +1,6 @@
 from PIL import Image
 import tempfile
+import json
 import os
 
 import settings
@@ -194,3 +195,13 @@ def merge_images(bg_img: Image.Image, fg_img: Image.Image, pos: tuple) -> Image.
     bg_img.paste(fg_img, (x, y), fg_img.convert('RGBA'))
 
     return bg_img
+
+
+def read_json(path: str) -> dict:
+    with open(path, 'r') as f:
+        return json.load(f)
+
+
+def save_json(path: str, dictionary: dict) -> None:
+    with open(path, 'w') as f:
+        json.dump(obj=dictionary, fp=f)
