@@ -9,6 +9,7 @@ from PIL import Image
 from PIL import ImageTk
 from pdf import PDF
 import os
+from urllib.parse import unquote
 
 import common
 import settings
@@ -62,8 +63,14 @@ class ESignGUI:
 
     def create_widgets(self) -> None:
         # PDF File selection
+        # sv = tkinter.StringVar()
         self.pdf_selection_entry = ttk.Entry(self.window)
+        # # self.pdf_selection_entry = ttk.Entry(self.window, textvariable=sv, validate="focusout", validatecommand=self.handler_pdf_selection_entry)
+        # # self.pdf_selection_entry.bind('<<EntrySelected>>', self.handler_pdf_selection_entry)
+        # self.pdf_selection_entry.bind('<<FocusIn>>', self.handler_pdf_selection_entry)
+        # self.pdf_selection_entry.bind('<<FocusOut>>', self.handler_pdf_selection_entry)
         # self.pdf_selection_entry.bind('<Enter>', self.handler_pdf_selection_entry)
+        self.pdf_selection_entry.bind('<Return>', self.handler_pdf_selection_entry)
         self.pdf_selection_button = ttk.Button(self.window, text=lang.select_pdf)
         self.pdf_selection_button.bind('<Button-1>', self.handler_select_pdf_file)
 
@@ -216,6 +223,16 @@ class ESignGUI:
     def select_pdf_file(self, pdf_file: str = None) -> None:
         # Select file
         self.pdf_file_path = filedialog.askopenfilename() if not pdf_file else pdf_file
+        self.update_pdf_file()
+
+    def pdf_file_from_entry(self) -> None:
+        entry = unquote(self.pdf_selection_entry.get())
+        entry = entry.replace('file:///', '')  # Edge
+        if entry != self.pdf_file_path:
+            self.pdf_file_path = entry
+            self.update_pdf_file()
+
+    def update_pdf_file(self) -> None:
         # Only if path was selected
         if self.pdf_file_path:
             # Clear entry
@@ -236,7 +253,7 @@ class ESignGUI:
                 self.clear_all_signatures()
             except Exception as error:
                 messagebox.showinfo(lang.error, f'{lang.error_opening_pdf_file}:\n{error}\n{lang.path}: {self.pdf_file_path}')
-            else:    
+            else:
                 # Update entry
                 self.pdf_selection_entry.insert(0, self.pdf_file_path)
             
@@ -408,8 +425,7 @@ class ESignGUI:
     def handler_pdf_selection_entry(self, event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
-        print(event)
-        # self.select_pdf_file()
+        self.pdf_file_from_entry()
 
     @log_exceptions
     def handler_sign_pdf(self, event = None) -> None:
