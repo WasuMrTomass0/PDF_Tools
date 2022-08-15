@@ -186,6 +186,7 @@ class ESignGUI:
 
         # Changed with size update
         self.update_signature_preview()
+        self.update_pdf_page_preview()
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
