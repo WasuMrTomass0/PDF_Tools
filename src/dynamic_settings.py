@@ -13,7 +13,7 @@ class DynamicSettings:
 
     def init_data(self) -> None:
         self.data = {
-            'WINDOW_INIT_DIMENSION': settings.WINDOW_INIT_DIMENSION
+            'ESIGN_WINDOW_INIT_DIMENSION': settings.ESIGN_WINDOW_INIT_DIMENSION
         }
         self.save()
 
@@ -27,10 +27,10 @@ class DynamicSettings:
             self.init_data()
 
     def set_window_dimension(self, dim: "tuple[int, int]") -> None:
-        self.data['WINDOW_INIT_DIMENSION'] = dim
+        self.data['ESIGN_WINDOW_INIT_DIMENSION'] = dim
         self.save()
 
     def get_window_dimension(self) -> "tuple[int, int]":
-        return self.data['WINDOW_INIT_DIMENSION']
+        return self.data['ESIGN_WINDOW_INIT_DIMENSION']
     
 DynamicSettings = DynamicSettings()

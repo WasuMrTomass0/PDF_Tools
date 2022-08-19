@@ -28,6 +28,9 @@ class Language:
         self.add_signatures_to = self.lang_dict['add_signatures_to']  # type: str
         self.signature_file_is_invalid = self.lang_dict['signature_file_is_invalid']  # type: str
         self.sure_to_delete = self.lang_dict['sure_to_delete']  # type: str
+        self.update = self.lang_dict['update']  # type: str
+        self.save = self.lang_dict['save']  # type: str
+        self.edit_signature = self.lang_dict['edit_signature']  # type: str
         
     pass
 

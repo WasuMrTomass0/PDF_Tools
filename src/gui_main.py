@@ -1,4 +1,5 @@
 from datetime import datetime
+from genericpath import isfile
 import shutil
 import tkinter
 from tkinter import filedialog
@@ -16,6 +17,7 @@ import settings
 from language import lang
 from logger import log_exceptions, logger
 from dynamic_settings import DynamicSettings
+from gui_remove_bground import RemoveBackgroundGUI
 
 
 class ESignGUI:
@@ -38,9 +40,9 @@ class ESignGUI:
         self.state = tkinter.NORMAL
 
         # Layout
-        self.WIDTH_INIT, self.INIT_HEIGHT = settings.WINDOW_INIT_DIMENSION
+        self.WIDTH_INIT, self.INIT_HEIGHT = settings.ESIGN_WINDOW_INIT_DIMENSION
         self.width, self.height = DynamicSettings.get_window_dimension()
-        self.WIDTH_MIN, self.HEIGHT_MIN = settings.WINDOW_MINIMUM_DIMENSION
+        self.WIDTH_MIN, self.HEIGHT_MIN = settings.ESIGN_WINDOW_MINIMUM_DIMENSION
 
         # Window
         self.window = tkinter.Tk()
@@ -116,6 +118,8 @@ class ESignGUI:
         self.add_signature_button.bind('<Button-1>', self.handler_add_signature)
         self.del_signature_button = ttk.Button(self.window, text=lang.delete_signature)
         self.del_signature_button.bind('<Button-1>', self.handler_del_signature)
+        self.edit_signature_button = ttk.Button(self.window, text=lang.edit_signature)
+        self.edit_signature_button.bind('<Button-1>', self.handler_edit_signature)
 
         self.update_widget_position()
         self.window.update()
@@ -155,10 +159,11 @@ class ESignGUI:
             (self.pdf_selection_entry,  (0.01, 0.01), (0.75, 0.05)),
             (self.pdf_selection_button, (0.77, 0.01), (0.22, 0.05)),
             #
-            (self.signature_selection,  (0.77, 0.07), (0.22, 0.05)),
-            (self.signature_preview,    (0.77, 0.13), (0.22, 0.1)),
-            (self.add_signature_button, (0.77, 0.24), (0.22, 0.05)),
-            (self.del_signature_button, (0.77, 0.30), (0.22, 0.05)),
+            (self.signature_selection,   (0.77, 0.07), (0.22, 0.05)),
+            (self.signature_preview,     (0.77, 0.13), (0.22, 0.1)),
+            (self.add_signature_button,  (0.77, 0.24), (0.22, 0.05)),
+            (self.del_signature_button,  (0.77, 0.30), (0.22, 0.05)),
+            (self.edit_signature_button, (0.77, 0.36), (0.22, 0.05)),
             # 
             (self.pdf_first_page_button, (0.01, 0.07), (0.05, 0.05)),
             (self.pdf_prev_page_button,  (0.06, 0.07), (0.20, 0.05)),
@@ -192,6 +197,7 @@ class ESignGUI:
                 widget.place(height=size_y)
 
         # Changed with size update
+        self.window.update()
         self.update_signature_preview()
         self.update_pdf_page_preview()
 
@@ -218,6 +224,16 @@ class ESignGUI:
             if confirmation:
                 os.remove(os.path.join(settings.SIGNATURES_DIR, selected))
                 self.load_signature_files()
+        pass
+
+    def edit_signature_file(self) -> None:
+        selected = self.signature_selection.get()
+        if selected:
+            path = os.path.join(settings.SIGNATURES_DIR, selected)
+            if os.path.isfile(path):
+                app = RemoveBackgroundGUI(path=path)
+                app.window.mainloop()
+                self.update_signature_preview()
         pass
 
     def select_pdf_file(self, pdf_file: str = None) -> None:
@@ -490,4 +506,11 @@ class ESignGUI:
         self.delete_signature_file()
         pass
     
+    @log_exceptions
+    def handler_edit_signature(self, event: tkinter.Event = None) -> None:
+        if self.state == tkinter.DISABLED:
+            return
+        self.edit_signature_file()
+        pass
+
     pass

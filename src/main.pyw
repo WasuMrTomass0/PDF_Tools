@@ -1,5 +1,5 @@
-import gui
+import gui_main
 
-app = gui.ESignGUI()
+app = gui_main.ESignGUI()
 
 app.window.mainloop()

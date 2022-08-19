@@ -8,6 +8,7 @@
     "fixed_scale": "Proporcje",
     "add_signature": "Dodaj podpis",
     "delete_signature": "Usuń podpis",
+    "edit_signature": "Edytuj podpis",
     "error": "Błąd",
     "error_opening_pdf_file": "Błąd podczas otwierania pliku pdf",
     "path": "Ścieżka",
@@ -17,5 +18,7 @@
     "add_signatures_to_document": "Dodaj podpis do dokumentu",
     "add_signatures_to": "Dodaj podpis do",
     "signature_file_is_invalid": "Podpis",
-    "sure_to_delete": "Czy na pewno chcesz usunąć podpis"
+    "sure_to_delete": "Czy na pewno chcesz usunąć podpis",
+    "update": "Odśwież",
+    "save": "Zapisz"
 }
