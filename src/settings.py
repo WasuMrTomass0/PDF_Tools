@@ -15,7 +15,7 @@ POPPLER_BIN_PATH = os.path.normpath(os.path.join(POPPLER_DIR, 'Library', 'bin'))
 LOG_FILE_NAME = 'log.log'
 LOG_FILE_PATH = os.path.normpath(os.path.join(DATA_DIR, LOG_FILE_NAME))
 
-DYNAMIC_SETTINGS_PATH = 'data/data.json'
+DYNAMIC_SETTINGS_PATH = os.path.normpath(os.path.join(DATA_DIR, 'data.json'))
 
 ESIGN_WINDOW_MINIMUM_DIMENSION = (462, 555)
 ESIGN_WINDOW_INIT_DIMENSION = (500, 600)
