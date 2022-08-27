@@ -208,10 +208,9 @@ class ESignGUI:
         self.selected_path = filedialog.askopenfilename()
         # 
         if self.selected_path:
-            new_fname = os.path.join(settings.SIGNATURES_DIR, os.path.basename(self.selected_path))
-            while os.path.isfile(new_fname):
-                new_fname = new_fname[::-1].replace('.', '._1', 1)[::-1]
-            shutil.copy(src=self.selected_path, dst=new_fname)
+            dst_path = os.path.join(settings.SIGNATURES_DIR, os.path.basename(self.selected_path))
+            dst_path = common.get_unused_path(path=dst_path)
+            shutil.copy(src=self.selected_path, dst=dst_path)
             self.load_signature_files()
         pass
 

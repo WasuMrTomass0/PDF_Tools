@@ -126,10 +126,9 @@ class PDF:
             fh.close()
             
         # Overwrite origin or create copy
-        destination_path = common.add_suffix_to_path(path=self.path, suffix='_signed')
-        while os.path.isfile(destination_path):
-            destination_path = common.add_suffix_to_path(path=self.path, suffix='_')
-        shutil.copyfile(out_fname, destination_path)
+        dst_path = common.add_suffix_to_path(path=self.path, suffix='_signed')
+        dst_path = common.get_unused_path(path=dst_path)
+        shutil.copyfile(out_fname, dst_path)
 
         # Delete files
         os.remove(out_fname)
@@ -137,6 +136,6 @@ class PDF:
             os.remove(fname)
 
         # Return name of new PDF file
-        return destination_path
+        return dst_path
 
     pass
