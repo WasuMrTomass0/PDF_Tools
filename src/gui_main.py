@@ -66,13 +66,7 @@ class ESignGUI:
 
     def create_widgets(self) -> None:
         # PDF File selection
-        # sv = tkinter.StringVar()
         self.pdf_selection_entry = ttk.Entry(self.window)
-        # # self.pdf_selection_entry = ttk.Entry(self.window, textvariable=sv, validate="focusout", validatecommand=self.handler_pdf_selection_entry)
-        # # self.pdf_selection_entry.bind('<<EntrySelected>>', self.handler_pdf_selection_entry)
-        # self.pdf_selection_entry.bind('<<FocusIn>>', self.handler_pdf_selection_entry)
-        # self.pdf_selection_entry.bind('<<FocusOut>>', self.handler_pdf_selection_entry)
-        # self.pdf_selection_entry.bind('<Enter>', self.handler_pdf_selection_entry)
         self.pdf_selection_entry.bind('<Return>', self.handler_pdf_selection_entry)
         self.pdf_selection_button = ttk.Button(self.window, text=Language.select_pdf)
         self.pdf_selection_button.bind('<Button-1>', self.handler_select_pdf_file)
