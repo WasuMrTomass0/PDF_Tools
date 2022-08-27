@@ -139,7 +139,7 @@ class ESignGUI:
 
         if init_resize or (w != self.width or h != self.height):
             # Scale
-            w, h = common.get_new_dimensions_fixed_scale(
+            w, h = images.get_new_dimensions_fixed_scale(
                 old_dim=(self.WIDTH_INIT, self.INIT_HEIGHT),
                 new_dim=(w, h)
             )
@@ -232,10 +232,10 @@ class ESignGUI:
             path = os.path.join(settings.SIGNATURES_DIR, selected)
             if os.path.isfile(path):
                 app = RemoveBackgroundGUI(
-                    path=path,
-                    exit_handler_fun=self.load_signature_files
+                    path=path
                 )
-                self.window.wait_window(window=app)
+                self.window.wait_window(window=app.window)
+                self.update_signature_preview()
         pass
 
     def select_pdf_file(self, pdf_file: str = None) -> None:
@@ -473,7 +473,7 @@ class ESignGUI:
                 self.rect_press_cord = event.x, event.y
             elif event.type == tkinter.EventType.ButtonRelease and self.rect_press_cord is not None:
                 # Read second point of rectangle and calculate its dimensions
-                rectangle = common.rectangle_from_two_points(
+                rectangle = images.rectangle_from_two_points(
                     p1=(event.x, event.y),
                     p2=self.rect_press_cord,
                     width=self.pdf_preview.winfo_width(),

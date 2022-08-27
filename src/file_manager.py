@@ -6,6 +6,24 @@ import os
 import settings
 
 
+def create_directories() -> None:
+    """Create data structure
+    """
+    dirs = (
+        settings.DATA_DIR,
+        settings.POPPLER_DIR,
+        settings.SIGNATURES_DIR,
+        settings.INVALID_SIGNATURES_DIR,
+        settings.TEMP_DIR,
+        settings.LANGUAGES_DIR
+    )
+
+    for d in dirs:
+        if not os.path.isdir(d):
+            os.mkdir(d)
+    pass
+
+
 def add_suffix_to_path(path: str, suffix: str) -> str:
     """Add suffix to path - before extension
 

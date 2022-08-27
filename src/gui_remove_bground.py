@@ -12,7 +12,7 @@ import images
 
 class RemoveBackgroundGUI:
 
-    def __init__(self, path: str, exit_handler_fun = None) -> None:
+    def __init__(self, path: str) -> None:
         # Window
         self.window = tkinter.Toplevel()
         self.width, self.height = settings.RMV_BGND_WINDOW_INIT_DIMENSION
@@ -20,7 +20,6 @@ class RemoveBackgroundGUI:
         self.window.resizable(False, False)
         self.window.title(f'Remove background')
         
-        self.exit_handler_fun = exit_handler_fun
         self.path = path
         self.img_transparent = Image.open(path)  # type: Image.Image
         self.imgtk_preview = None  # type: ImageTk
@@ -109,8 +108,6 @@ class RemoveBackgroundGUI:
         self.imgtk_preview = ImageTk.PhotoImage(img)
         if self.imgtk_preview:
             self.img_preview.configure(image=self.imgtk_preview)
-        else:
-            print('self.imgtk_preview -> False')
         pass
 
     def update_image(self) -> None:
@@ -130,8 +127,6 @@ class RemoveBackgroundGUI:
     def save_image(self) -> None:
         self.img_transparent.save(self.path)
         self.window.destroy()
-        if self.exit_handler_fun:
-            self.exit_handler_fun()
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     def handler_button_update(self, event = None) -> None:
