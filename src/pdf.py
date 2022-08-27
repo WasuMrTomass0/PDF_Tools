@@ -8,6 +8,7 @@ import os
 from reportlab.pdfgen import canvas
 
 import settings
+import images
 from logger import logger
 
 
@@ -85,7 +86,7 @@ class PDF:
             for single_signature_data in page_signatures_data:
                 if single_signature_data:
                     # Load signature and resize it
-                    signature_img = common.load_signature_image(
+                    signature_img = images.load_signature_image(
                         signature_data=single_signature_data,
                         width=float(pdf_page.cropBox.getWidth()),
                         height=float(pdf_page.cropBox.getHeight())

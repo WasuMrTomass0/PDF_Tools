@@ -12,8 +12,9 @@ from pdf import PDF
 import os
 from urllib.parse import unquote
 
-import common
 import settings
+import common
+import images
 from language import lang
 from logger import log_exceptions, logger
 from dynamic_settings import DynamicSettings
@@ -304,7 +305,7 @@ class ESignGUI:
                 self.load_signature_files()
             else:
                 # Load correct image file
-                img = common.resize_image_fixed_scale(
+                img = images.resize_image_fixed_scale(
                     img=img, 
                     new_width=self.signature_preview.winfo_width(), 
                     new_height=self.signature_preview.winfo_height()
@@ -328,7 +329,7 @@ class ESignGUI:
         if self.pdf:
             if img is None:
                 img = self.pdf.get_page_as_image(self.pdf_page_number)
-            img = common.resize_image_fixed_scale(
+            img = images.resize_image_fixed_scale(
                 img=img, 
                 new_width=self.pdf_preview.winfo_width(), 
                 new_height=self.pdf_preview.winfo_height()
@@ -338,13 +339,13 @@ class ESignGUI:
                 for signature_data in self.pdf_signatures_data[self.pdf_page_number-1]:
                     _, _, x, y, _, _ = signature_data
                     # Load signature and resize it
-                    signature_img = common.load_signature_image(
+                    signature_img = images.load_signature_image(
                         signature_data=signature_data, 
                         width=self.pdf_preview.winfo_width(), 
                         height=self.pdf_preview.winfo_height()
                     )
                     # Merge signature image and page image
-                    img = common.merge_images(
+                    img = images.merge_images(
                         bg_img=img,
                         fg_img=signature_img,
                         pos=(x, y)

@@ -101,7 +101,7 @@ class RemoveBackgroundGUI:
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     def update_image_preview(self) -> None:
-        img = common.resize_image_fixed_scale(
+        img = images.resize_image_fixed_scale(
             img=self.img_transparent,
             new_width=self.img_preview.winfo_width(),
             new_height=self.img_preview.winfo_height()
