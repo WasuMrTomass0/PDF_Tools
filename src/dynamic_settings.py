@@ -13,7 +13,8 @@ class DynamicSettings:
 
     def init_data(self) -> None:
         self.data = {
-            'ESIGN_WINDOW_INIT_DIMENSION': settings.ESIGN_WINDOW_INIT_DIMENSION
+            'ESIGN_WINDOW_DEFAULT_DIMENSION': settings.ESIGN_WINDOW_DEFAULT_DIMENSION,
+            'LANGUAGE': settings.DEFAULT_LANGUAGE
         }
         self.save()
 
@@ -27,10 +28,19 @@ class DynamicSettings:
             self.init_data()
 
     def set_window_dimension(self, dim: "tuple[int, int]") -> None:
-        self.data['ESIGN_WINDOW_INIT_DIMENSION'] = dim
+        self.data['ESIGN_WINDOW_DEFAULT_DIMENSION'] = dim
         self.save()
 
     def get_window_dimension(self) -> "tuple[int, int]":
-        return self.data['ESIGN_WINDOW_INIT_DIMENSION']
+        return self.data['ESIGN_WINDOW_DEFAULT_DIMENSION']
+
+    def set_language(self, language: str) -> None:
+        self.data['LANGUAGE'] = language
+        self.save()
+
+    def get_language(self) -> str:
+        if 'LANGUAGE' not in self.data:
+            self.set_language(language=settings.DEFAULT_LANGUAGE)
+        return self.data['LANGUAGE']
     
 DynamicSettings = DynamicSettings()

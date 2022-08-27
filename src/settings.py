@@ -18,10 +18,8 @@ LOG_FILE_PATH = os.path.normpath(os.path.join(DATA_DIR, LOG_FILE_NAME))
 DYNAMIC_SETTINGS_PATH = os.path.normpath(os.path.join(DATA_DIR, 'data.json'))
 
 ESIGN_WINDOW_MINIMUM_DIMENSION = (462, 555)
-ESIGN_WINDOW_INIT_DIMENSION = (500, 600)
+ESIGN_WINDOW_DEFAULT_DIMENSION = (500, 600)
 
 RMV_BGND_WINDOW_INIT_DIMENSION = (500, 600)
 
-# Language json file names
-LANG_POLISH = 'polish.json'
-# LANG_ENGLISH = 'english.json'
+DEFAULT_LANGUAGE = 'polish.json'

@@ -15,7 +15,7 @@ from urllib.parse import unquote
 import settings
 import common
 import images
-from language import lang
+from language import Language
 from logger import log_exceptions, logger
 from dynamic_settings import DynamicSettings
 from gui_remove_bground import RemoveBackgroundGUI
@@ -41,7 +41,7 @@ class ESignGUI:
         self.state = tkinter.NORMAL
 
         # Layout
-        self.WIDTH_INIT, self.INIT_HEIGHT = settings.ESIGN_WINDOW_INIT_DIMENSION
+        self.WIDTH_INIT, self.INIT_HEIGHT = settings.ESIGN_WINDOW_DEFAULT_DIMENSION
         self.width, self.height = DynamicSettings.get_window_dimension()
         self.WIDTH_MIN, self.HEIGHT_MIN = settings.ESIGN_WINDOW_MINIMUM_DIMENSION
 
@@ -56,7 +56,7 @@ class ESignGUI:
         try:
             common.init_check()
         except Exception as error:
-            messagebox.showinfo(lang.error, f'{lang.error}:\n{str(error)}')
+            messagebox.showinfo(Language.error, f'{Language.error}:\n{str(error)}')
 
         self.create_widgets()
         self.load_signature_files()
@@ -74,7 +74,7 @@ class ESignGUI:
         # self.pdf_selection_entry.bind('<<FocusOut>>', self.handler_pdf_selection_entry)
         # self.pdf_selection_entry.bind('<Enter>', self.handler_pdf_selection_entry)
         self.pdf_selection_entry.bind('<Return>', self.handler_pdf_selection_entry)
-        self.pdf_selection_button = ttk.Button(self.window, text=lang.select_pdf)
+        self.pdf_selection_button = ttk.Button(self.window, text=Language.select_pdf)
         self.pdf_selection_button.bind('<Button-1>', self.handler_select_pdf_file)
 
         # Signature selection
@@ -85,9 +85,9 @@ class ESignGUI:
 
         # PDF page preview
         self.pdf_first_page_button = ttk.Button(self.window, text='<<')
-        self.pdf_prev_page_button = ttk.Button(self.window, text=lang.prev_page)
-        self.pdf_page_number_label = ttk.Label(self.window, text=lang.no_pages, anchor='center')
-        self.pdf_next_page_button = ttk.Button(self.window, text=lang.next_page)
+        self.pdf_prev_page_button = ttk.Button(self.window, text=Language.prev_page)
+        self.pdf_page_number_label = ttk.Label(self.window, text=Language.no_pages, anchor='center')
+        self.pdf_next_page_button = ttk.Button(self.window, text=Language.next_page)
         self.pdf_last_page_button = ttk.Button(self.window, text='>>')
         #
         self.pdf_first_page_button.bind('<Button-1>', self.handler_pdf_first_page_button)
@@ -100,26 +100,26 @@ class ESignGUI:
         self.pdf_preview.bind('<ButtonRelease-1>', self.handler_pdf_preview_clicked)
 
         # Control
-        self.sign_pdf_button = ttk.Button(self.window, text=lang.sign_document)
+        self.sign_pdf_button = ttk.Button(self.window, text=Language.sign_document)
         self.sign_pdf_button.bind('<Button-1>', self.handler_sign_pdf)
         #
-        self.clear_page_button = ttk.Button(self.window, text=lang.clear_page)
+        self.clear_page_button = ttk.Button(self.window, text=Language.clear_page)
         self.clear_page_button.bind('<Button-1>', self.handler_clear_page)
         #
         self.overwrite_status = tkinter.BooleanVar()
-        self.overwrite_checkbox = ttk.Checkbutton(self.window, text=lang.overwrite, var=self.overwrite_status)
+        self.overwrite_checkbox = ttk.Checkbutton(self.window, text=Language.overwrite, var=self.overwrite_status)
         self.overwrite_status.set(True)
         #
         self.signature_fixed_scale = tkinter.BooleanVar()
-        self.signature_fixed_scale_checkbox = ttk.Checkbutton(self.window, text=lang.fixed_scale, var=self.signature_fixed_scale)
+        self.signature_fixed_scale_checkbox = ttk.Checkbutton(self.window, text=Language.fixed_scale, var=self.signature_fixed_scale)
         self.signature_fixed_scale.set(True)
 
         # 
-        self.add_signature_button = ttk.Button(self.window, text=lang.add_signature)
+        self.add_signature_button = ttk.Button(self.window, text=Language.add_signature)
         self.add_signature_button.bind('<Button-1>', self.handler_add_signature)
-        self.del_signature_button = ttk.Button(self.window, text=lang.delete_signature)
+        self.del_signature_button = ttk.Button(self.window, text=Language.delete_signature)
         self.del_signature_button.bind('<Button-1>', self.handler_del_signature)
-        self.edit_signature_button = ttk.Button(self.window, text=lang.edit_signature)
+        self.edit_signature_button = ttk.Button(self.window, text=Language.edit_signature)
         self.edit_signature_button.bind('<Button-1>', self.handler_edit_signature)
 
         self.update_widget_position()
@@ -219,8 +219,8 @@ class ESignGUI:
         selected = self.signature_selection.get()
         if selected:
             confirmation = messagebox.askokcancel(
-                title=lang.info,
-                message=f'{lang.sure_to_delete} {selected}?'
+                title=Language.info,
+                message=f'{Language.sure_to_delete} {selected}?'
             )
             if confirmation:
                 os.remove(os.path.join(settings.SIGNATURES_DIR, selected))
@@ -269,7 +269,7 @@ class ESignGUI:
                 self.pdf_page_number = 1
                 self.clear_all_signatures()
             except Exception as error:
-                messagebox.showinfo(lang.error, f'{lang.error_opening_pdf_file}:\n{error}\n{lang.path}: {self.pdf_file_path}')
+                messagebox.showinfo(Language.error, f'{Language.error_opening_pdf_file}:\n{error}\n{Language.path}: {self.pdf_file_path}')
             else:
                 # Update entry
                 self.pdf_selection_entry.insert(0, self.pdf_file_path)
@@ -319,9 +319,9 @@ class ESignGUI:
 
     def update_pdf_page_number(self) -> None:
         if self.pdf_page_number and self.pdf_page_number > 0 and self.pdf_number_of_pages > 0:
-            self.pdf_page_number_label.configure(text=f'{lang.page} {self.pdf_page_number} / {self.pdf_number_of_pages}')
+            self.pdf_page_number_label.configure(text=f'{Language.page} {self.pdf_page_number} / {self.pdf_number_of_pages}')
         else:
-            self.pdf_page_number_label.configure(text=lang.no_pages)
+            self.pdf_page_number_label.configure(text=Language.no_pages)
         pass
 
     def update_pdf_page_preview(self, img = None) -> None:
@@ -363,11 +363,11 @@ class ESignGUI:
 
     def sign_pdf(self) -> None:
         if not self.pdf:
-            messagebox.showinfo(lang.info, lang.select_pdf)
+            messagebox.showinfo(Language.info, Language.select_pdf)
             return
 
         if not any(self.pdf_signatures_data):
-            messagebox.showinfo(lang.info, lang.add_signatures_to_document)
+            messagebox.showinfo(Language.info, Language.add_signatures_to_document)
             return
 
         # Disable handlers
@@ -464,7 +464,7 @@ class ESignGUI:
             return
         if self.pdf:
             if not self.signature_files and event.type == tkinter.EventType.ButtonPress:
-                messagebox.showinfo(lang.error, f'{lang.add_signatures_to} "{settings.SIGNATURES_DIR}"')
+                messagebox.showinfo(Language.error, f'{Language.add_signatures_to} "{settings.SIGNATURES_DIR}"')
                 return
 
             if event.type == tkinter.EventType.ButtonPress:
@@ -481,7 +481,7 @@ class ESignGUI:
                 signature_img_path = os.path.join(settings.SIGNATURES_DIR, self.signature_selection.get())
                 
                 if not signature_img_path or not os.path.isfile(signature_img_path):
-                    messagebox.showinfo(lang.error, lang.signature_file_is_invalid)
+                    messagebox.showinfo(Language.error, Language.signature_file_is_invalid)
                     return
 
                 self.pdf_signatures_data[self.pdf_page_number-1].append(

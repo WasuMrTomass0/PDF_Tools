@@ -6,7 +6,7 @@ from tkinter import Scale
 from tkinter import HORIZONTAL
 
 import settings
-from language import lang
+from language import Language
 import images
 import common
 
@@ -48,9 +48,9 @@ class RemoveBackgroundGUI:
         self.entry_b_range_to   = ttk.Entry(self.window, textvariable=self.b_range_to)
         self.label_b_range = ttk.Label(self.window, text='0 - 255')
 
-        self.button_update = ttk.Button(self.window, text=lang.update)
+        self.button_update = ttk.Button(self.window, text=Language.update)
         self.button_update.bind('<Button-1>', self.handler_button_update)
-        self.button_save   = ttk.Button(self.window, text=lang.save)
+        self.button_save   = ttk.Button(self.window, text=Language.save)
         self.button_save.bind('<Button-1>', self.handler_button_save)
 
         self.update_widget_position()

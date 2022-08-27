@@ -1,11 +1,17 @@
+from genericpath import isfile
 import json
 import os
 import settings
 
+from dynamic_settings import DynamicSettings
+
 
 class Language:
 
-    def __init__(self, path: str) -> None:
+    def load_language(self, path: str) -> None:
+        if not os.path.isfile(path):
+            raise ValueError(f'Specified language file does not exist. {path = }')
+
         with open(path, 'r', encoding='utf-8') as f:
             self.lang_dict = json.loads(f.read())
 
@@ -31,7 +37,12 @@ class Language:
         self.update = self.lang_dict['update']  # type: str
         self.save = self.lang_dict['save']  # type: str
         self.edit_signature = self.lang_dict['edit_signature']  # type: str
-        
+
+    def __init__(self, path: str) -> None:
+        self.load_language(path=path)
+
     pass
 
-lang = Language(os.path.join(settings.LANGUAGES_DIR, settings.LANG_POLISH))
+Language = Language(
+    path=os.path.join(settings.LANGUAGES_DIR, DynamicSettings.get_language())
+)
