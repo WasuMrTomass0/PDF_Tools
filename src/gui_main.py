@@ -15,6 +15,7 @@ from urllib.parse import unquote
 import settings
 import common
 import images
+import popup_windows
 from language import Language
 from logger import log_exceptions
 from dynamic_settings import DynamicSettings
@@ -56,7 +57,10 @@ class ESignGUI:
         try:
             common.init_check()
         except Exception as error:
-            messagebox.showinfo(Language.error, f'{Language.error}:\n{str(error)}')
+            popup_windows.error_popup(
+                title=Language.error,
+                msg=f'{Language.error}:\n{str(error)}'
+            )
 
         self.create_widgets()
         self.load_signature_files()
@@ -108,7 +112,7 @@ class ESignGUI:
         self.signature_fixed_scale_checkbox = ttk.Checkbutton(self.window, text=Language.fixed_scale, var=self.signature_fixed_scale)
         self.signature_fixed_scale.set(True)
 
-        # 
+        #
         self.add_signature_button = ttk.Button(self.window, text=Language.add_signature)
         self.add_signature_button.bind('<Button-1>', self.handler_add_signature)
         self.del_signature_button = ttk.Button(self.window, text=Language.delete_signature)
@@ -144,7 +148,7 @@ class ESignGUI:
             self.width, self.height = w, h
             DynamicSettings.set_window_dimension(dim=(self.width, self.height))
             self.window.geometry(f'{self.width}x{self.height}')
-            # 
+            #
             self.update_widget_position()
 
     def update_widget_position(self) -> None:
@@ -159,13 +163,13 @@ class ESignGUI:
             (self.add_signature_button,  (0.77, 0.24), (0.22, 0.05)),
             (self.del_signature_button,  (0.77, 0.30), (0.22, 0.05)),
             (self.edit_signature_button, (0.77, 0.36), (0.22, 0.05)),
-            # 
+            #
             (self.pdf_first_page_button, (0.01, 0.07), (0.05, 0.05)),
             (self.pdf_prev_page_button,  (0.06, 0.07), (0.20, 0.05)),
             (self.pdf_page_number_label, (0.27, 0.07), (0.23, 0.05)),
             (self.pdf_next_page_button,  (0.51, 0.07), (0.20, 0.05)),
             (self.pdf_last_page_button,  (0.71, 0.07), (0.05, 0.05)),
-            # 
+            #
             (self.pdf_preview, (0.01, 0.13), (0.76, 0.86)),
             #
             (self.signature_fixed_scale_checkbox, (0.77, 0.72), (0.22, 0.05)),
@@ -264,11 +268,14 @@ class ESignGUI:
                 self.pdf_page_number = 1
                 self.clear_all_signatures()
             except Exception as error:
-                messagebox.showinfo(Language.error, f'{Language.error_opening_pdf_file}:\n{error}\n{Language.path}: {self.pdf_file_path}')
+                popup_windows.error_popup(
+                    title=Language.error,
+                    msg=f'{Language.error_opening_pdf_file}:\n{Language.path}: {self.pdf_file_path}\n{error}'
+                )
             else:
                 # Update entry
                 self.pdf_selection_entry.insert(0, self.pdf_file_path)
-            
+
             # Update pdf preview and number
             self.update_pdf_page_preview()
             self.update_pdf_page_number()
@@ -294,15 +301,15 @@ class ESignGUI:
             except PIL.UnidentifiedImageError:
                 # Move invalid file
                 shutil.move(
-                    img_path, 
+                    img_path,
                     os.path.join(settings.INVALID_SIGNATURES_DIR, self.signature_selection.get())
                 )
-                self.load_signature_files()
+                return self.load_signature_files()
             else:
                 # Load correct image file
                 img = images.resize_image_fixed_scale(
-                    img=img, 
-                    new_width=self.signature_preview.winfo_width(), 
+                    img=img,
+                    new_width=self.signature_preview.winfo_width(),
                     new_height=self.signature_preview.winfo_height()
                 )
                 # Load to widget
@@ -325,8 +332,8 @@ class ESignGUI:
             if img is None:
                 img = self.pdf.get_page_as_image(self.pdf_page_number)
             img = images.resize_image_fixed_scale(
-                img=img, 
-                new_width=self.pdf_preview.winfo_width(), 
+                img=img,
+                new_width=self.pdf_preview.winfo_width(),
                 new_height=self.pdf_preview.winfo_height()
             )
             # Add signatures
@@ -335,8 +342,8 @@ class ESignGUI:
                     _, _, x, y, _, _ = signature_data
                     # Load signature and resize it
                     signature_img = images.load_signature_image(
-                        signature_data=signature_data, 
-                        width=self.pdf_preview.winfo_width(), 
+                        signature_data=signature_data,
+                        width=self.pdf_preview.winfo_width(),
                         height=self.pdf_preview.winfo_height()
                     )
                     # Merge signature image and page image
@@ -474,7 +481,7 @@ class ESignGUI:
                     height=self.pdf_preview.winfo_height()
                 )
                 signature_img_path = os.path.join(settings.SIGNATURES_DIR, self.signature_selection.get())
-                
+
                 if not signature_img_path or not os.path.isfile(signature_img_path):
                     messagebox.showinfo(Language.error, Language.signature_file_is_invalid)
                     return
@@ -494,14 +501,14 @@ class ESignGUI:
             return
         self.select_signature_file()
         pass
-    
+
     @log_exceptions
     def handler_del_signature(self, event: tkinter.Event = None) -> None:
         if self.state == tkinter.DISABLED:
             return
         self.delete_signature_file()
         pass
-    
+
     @log_exceptions
     def handler_edit_signature(self, event: tkinter.Event = None) -> None:
         if self.state == tkinter.DISABLED:
