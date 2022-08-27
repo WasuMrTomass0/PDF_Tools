@@ -1,4 +1,6 @@
+import os
 from PIL import Image
+
 import common
 
 
@@ -119,3 +121,23 @@ def merge_images(bg_img: Image.Image, fg_img: Image.Image, pos: tuple) -> Image.
     bg_img.paste(fg_img, (x, y), fg_img.convert('RGBA'))
 
     return bg_img
+
+
+def save_as_png(src_path: str, dst_dir: str) -> str:
+    """Save source image file as png file in dst dir.
+    Used to convert jpg, jpeg, etc files to png and load them to dst directory.
+
+    Args:
+        src_path (str): Path to source file
+        dst_dir (str): Destination directory path
+    """
+    # Load image
+    img = Image.open(fp=src_path)
+    # Create output path
+    name = '.'.join(os.path.basename(src_path).split('.')[:-1]) + '.png'
+    dst_path = os.path.join(dst_dir, name)
+    dst_path = common.get_unused_path(dst_path)
+    # Save image
+    img.save(dst_path)
+    # Return
+    return dst_path

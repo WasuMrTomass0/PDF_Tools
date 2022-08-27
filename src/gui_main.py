@@ -16,7 +16,7 @@ import settings
 import common
 import images
 from language import Language
-from logger import log_exceptions, logger
+from logger import log_exceptions
 from dynamic_settings import DynamicSettings
 from gui_remove_bground import RemoveBackgroundGUI
 
@@ -205,12 +205,12 @@ class ESignGUI:
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     def select_signature_file(self) -> None:
-        self.selected_path = filedialog.askopenfilename()
-        # 
-        if self.selected_path:
-            dst_path = os.path.join(settings.SIGNATURES_DIR, os.path.basename(self.selected_path))
-            dst_path = common.get_unused_path(path=dst_path)
-            shutil.copy(src=self.selected_path, dst=dst_path)
+        selected_path = filedialog.askopenfilename()
+        if selected_path:
+            images.save_as_png(
+                src_path=selected_path,
+                dst_dir=settings.SIGNATURES_DIR
+            )
             self.load_signature_files()
         pass
 
@@ -231,9 +231,11 @@ class ESignGUI:
         if selected:
             path = os.path.join(settings.SIGNATURES_DIR, selected)
             if os.path.isfile(path):
-                app = RemoveBackgroundGUI(path=path)
-                app.window.mainloop()
-                self.update_signature_preview()
+                app = RemoveBackgroundGUI(
+                    path=path,
+                    exit_handler_fun=self.load_signature_files
+                )
+                self.window.wait_window(window=app)
         pass
 
     def select_pdf_file(self, pdf_file: str = None) -> None:

@@ -8,12 +8,11 @@ from tkinter import HORIZONTAL
 import settings
 from language import Language
 import images
-import common
 
 
 class RemoveBackgroundGUI:
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, exit_handler_fun = None) -> None:
         # Window
         self.window = tkinter.Toplevel()
         self.width, self.height = settings.RMV_BGND_WINDOW_INIT_DIMENSION
@@ -21,6 +20,7 @@ class RemoveBackgroundGUI:
         self.window.resizable(False, False)
         self.window.title(f'Remove background')
         
+        self.exit_handler_fun = exit_handler_fun
         self.path = path
         self.img_transparent = Image.open(path)  # type: Image.Image
         self.imgtk_preview = None  # type: ImageTk
@@ -130,6 +130,8 @@ class RemoveBackgroundGUI:
     def save_image(self) -> None:
         self.img_transparent.save(self.path)
         self.window.destroy()
+        if self.exit_handler_fun:
+            self.exit_handler_fun()
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     def handler_button_update(self, event = None) -> None:
@@ -141,9 +143,3 @@ class RemoveBackgroundGUI:
         pass
 
     pass
-
-
-# path = r'C:\Projekty\eSign\data\signatures\test_podpis.png'
-
-# app = RemoveBackgroundGUI(path)
-# app.window.mainloop()
