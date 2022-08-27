@@ -1,7 +1,9 @@
 import logging
 import traceback
 
+import popup_windows
 import settings
+from language import Language
 
 logger = logging.getLogger('logger')
 fh = logging.FileHandler(settings.LOG_FILE_PATH)
@@ -17,4 +19,9 @@ def log_exceptions(fn):
             return fn(*args, **kwargs)
         except Exception as error:
             logger.error(msg=f'{str(error)}\n{traceback.format_exc()}')
+            popup_windows.error_popup(
+                title=Language.error_unknown,
+                msg=str(error)
+            )
+
     return wrapper

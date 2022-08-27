@@ -10,6 +10,7 @@
     "delete_signature": "Usuń podpis",
     "edit_signature": "Edytuj podpis",
     "error": "Błąd",
+    "error_unknown": "Nieobsłużony błąd",
     "error_opening_pdf_file": "Błąd podczas otwierania pliku pdf",
     "path": "Ścieżka",
     "page": "Strona",

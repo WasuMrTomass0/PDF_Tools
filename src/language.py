@@ -25,6 +25,7 @@ class Language:
         self.add_signature = self.lang_dict['add_signature']  # type: str
         self.delete_signature = self.lang_dict['delete_signature']  # type: str
         self.error = self.lang_dict['error']  # type: str
+        self.error_unknown = self.lang_dict['error_unknown']  # type: str
         self.error_opening_pdf_file = self.lang_dict['error_opening_pdf_file']  # type: str
         self.path = self.lang_dict['path']  # type: str
         self.page = self.lang_dict['page']  # type: str

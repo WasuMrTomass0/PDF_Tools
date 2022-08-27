@@ -10,6 +10,7 @@
     "delete_signature": "Delete signature",
     "edit_signature": "Edit signature",
     "error": "Error",
+    "error_unknown": "Unknown error",
     "error_opening_pdf_file": "Error while opening pdf file",
     "path": "Path",
     "page": "Page",
