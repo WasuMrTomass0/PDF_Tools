@@ -1,6 +1,7 @@
 import os
 from PIL import Image
 
+import file_manager
 import common
 
 
@@ -136,7 +137,7 @@ def save_as_png(src_path: str, dst_dir: str) -> str:
     # Create output path
     name = '.'.join(os.path.basename(src_path).split('.')[:-1]) + '.png'
     dst_path = os.path.join(dst_dir, name)
-    dst_path = common.get_unused_path(dst_path)
+    dst_path = file_manager.get_unused_path(dst_path)
     # Save image
     img.save(dst_path)
     # Return

@@ -1,7 +1,7 @@
 import os
 
+import file_manager
 import settings
-import common
 
 
 class DynamicSettings:
@@ -23,13 +23,13 @@ class DynamicSettings:
     def save(self) -> None:
         """Save dictionary to file
         """
-        common.save_json(path=self._path, dictionary=self.data)
+        file_manager.save_json(path=self._path, dictionary=self.data)
 
     def read(self) -> None:
         """Read data from file
         """
         if os.path.isfile(self._path):
-            self.data = common.read_json(path=self._path)
+            self.data = file_manager.read_json(path=self._path)
         else:
             self.init_data()
 

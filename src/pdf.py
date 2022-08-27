@@ -7,6 +7,7 @@ import shutil
 import os
 from reportlab.pdfgen import canvas
 
+import file_manager
 import settings
 import images
 from logger import logger
@@ -79,7 +80,7 @@ class PDF:
             page_signatures_data = pdf_signatures_data[pdf_page_number-1]
 
             # Temp pdf file - ONE page with signatures
-            pdf_signed_page_fname = common.get_tmp_filename(prefix='signed_page_', suffix='.pdf')
+            pdf_signed_page_fname = file_manager.get_tmp_filename(prefix='signed_page_', suffix='.pdf')
             c = canvas.Canvas(pdf_signed_page_fname, pagesize=pdf_page.cropBox)
 
             # Iterate though signatures
@@ -116,7 +117,7 @@ class PDF:
             files_to_close.append((pdf_signed_page_fh, pdf_signed_page_fname))
 
         # Save new PDF file
-        out_fname = common.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
+        out_fname = file_manager.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
         with open(out_fname, 'wb') as out_fh:
             out_pdf.write(out_fh)
             del out_pdf
@@ -126,8 +127,8 @@ class PDF:
             fh.close()
             
         # Overwrite origin or create copy
-        dst_path = common.add_suffix_to_path(path=self.path, suffix='_signed')
-        dst_path = common.get_unused_path(path=dst_path)
+        dst_path = file_manager.add_suffix_to_path(path=self.path, suffix='_signed')
+        dst_path = file_manager.get_unused_path(path=dst_path)
         shutil.copyfile(out_fname, dst_path)
 
         # Delete files
