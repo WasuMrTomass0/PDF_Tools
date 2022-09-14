@@ -68,5 +68,5 @@ class DynamicSettings:
         if 'LANGUAGE' not in self.data:
             self.set_language(language=settings.DEFAULT_LANGUAGE)
         return self.data['LANGUAGE']
-    
+
 DynamicSettings = DynamicSettings()
