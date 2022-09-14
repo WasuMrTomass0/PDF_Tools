@@ -5,6 +5,7 @@ from tkinter import ttk
 from tkinter import Scale
 from tkinter import HORIZONTAL
 
+from logger import log_exceptions
 import settings
 from language import Language
 import images
@@ -12,6 +13,7 @@ import images
 
 class RemoveBackgroundGUI:
 
+    @log_exceptions
     def __init__(self, path: str) -> None:
         # Window
         self.window = tkinter.Toplevel()
@@ -19,7 +21,7 @@ class RemoveBackgroundGUI:
         self.window.geometry(f'{self.width}x{self.height}')
         self.window.resizable(False, False)
         self.window.title(f'Remove background')
-        
+
         self.path = path
         self.img_transparent = Image.open(path)  # type: Image.Image
         self.imgtk_preview = None  # type: ImageTk
@@ -28,19 +30,19 @@ class RemoveBackgroundGUI:
 
     def create_widgets(self) -> None:
         self.img_preview = ttk.Label(self.window, image=self.imgtk_preview)
-        
+
         self.r_range_from = tkinter.IntVar(value=50)
         self.r_range_to = tkinter.IntVar(value=255)
         self.entry_r_range_from = ttk.Entry(self.window, textvariable=self.r_range_from)
         self.entry_r_range_to   = ttk.Entry(self.window, textvariable=self.r_range_to)
         self.label_r_range = ttk.Label(self.window, text='0 - 255')
-        
+
         self.g_range_from = tkinter.IntVar(value=50)
         self.g_range_to = tkinter.IntVar(value=255)
         self.entry_g_range_from = ttk.Entry(self.window, textvariable=self.g_range_from)
         self.entry_g_range_to   = ttk.Entry(self.window, textvariable=self.g_range_to)
         self.label_g_range = ttk.Label(self.window, text='0 - 255')
-        
+
         self.b_range_from = tkinter.IntVar(value=50)
         self.b_range_to = tkinter.IntVar(value=255)
         self.entry_b_range_from = ttk.Entry(self.window, textvariable=self.b_range_from)
@@ -63,11 +65,11 @@ class RemoveBackgroundGUI:
             (self.entry_r_range_from, (0.2, 0.52), (0.2, 0.05)),
             (self.entry_r_range_to,   (0.6, 0.52), (0.2, 0.05)),
             (self.label_r_range,      (0.45, 0.52), (0.1, 0.05)),
-            
+
             (self.entry_g_range_from, (0.2, 0.58), (0.2, 0.05)),
             (self.entry_g_range_to,   (0.6, 0.58), (0.2, 0.05)),
             (self.label_g_range,      (0.45, 0.58), (0.1, 0.05)),
-            
+
             (self.entry_b_range_from, (0.2, 0.64), (0.2, 0.05)),
             (self.entry_b_range_to,   (0.6, 0.64), (0.2, 0.05)),
             (self.label_b_range,      (0.45, 0.64), (0.1, 0.05)),
@@ -129,10 +131,12 @@ class RemoveBackgroundGUI:
         self.window.destroy()
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    @log_exceptions
     def handler_button_update(self, event = None) -> None:
         self.update_image()
         pass
 
+    @log_exceptions
     def handler_button_save(self, event = None) -> None:
         self.save_image()
         pass
