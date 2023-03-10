@@ -1,6 +1,7 @@
 **/__pycache__
 */__pycache__
-data/poppler/*
+venv
 ref
 *.log
+data/poppler/*
 data/data.json

@@ -116,8 +116,12 @@ class PDF:
             # Append fh and fname to close and remove file
             files_to_close.append((pdf_signed_page_fh, pdf_signed_page_fname))
 
+        # Create output file name
+        if overwrite:
+            out_fname = self.path
+        else:
+            out_fname = file_manager.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
         # Save new PDF file
-        out_fname = file_manager.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
         with open(out_fname, 'wb') as out_fh:
             out_pdf.write(out_fh)
             del out_pdf

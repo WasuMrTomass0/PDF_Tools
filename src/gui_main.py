@@ -9,6 +9,7 @@ import PIL
 from PIL import Image
 from PIL import ImageTk
 from pdf import PDF
+import glob
 import os
 from urllib.parse import unquote
 
@@ -50,6 +51,7 @@ class ESignGUI:
         self.window = tkinter.Tk()
         self.window.geometry(f'{self.width}x{self.height}')
         self.window.minsize(width=self.WIDTH_MIN, height=self.HEIGHT_MIN)
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
         # self.window.resizable(False, False)
         self.window.title(f'eSign')
         self.window.bind(f'<Configure>', self.resize_window)
@@ -389,6 +391,16 @@ class ESignGUI:
         pass
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    @log_exceptions
+    def on_closing(self):
+        # Remove temp/ content
+        files = glob.glob(os.path.join(settings.TEMP_DIR, '*'))
+        for f in files:
+            os.remove(f)
+
+        # Close window
+        self.window.destroy()
+        pass
 
     @log_exceptions
     def handler_pdf_next_page_button(self, event = None) -> None:
