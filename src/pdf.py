@@ -55,9 +55,9 @@ class PDF:
     def get_page_as_image(self, page_num: int):
         if not 0 < page_num <= self.get_number_of_pages():
             raise ValueError(f'Page number ({page_num}) out of range (1 - {self.get_number_of_pages()})')
-        
+
         pages = pdf2image.convert_from_path(
-            pdf_path=self.path, 
+            pdf_path=self.path,
             first_page=page_num,
             last_page=page_num,
             poppler_path=settings.POPPLER_BIN_PATH
@@ -116,11 +116,8 @@ class PDF:
             # Append fh and fname to close and remove file
             files_to_close.append((pdf_signed_page_fh, pdf_signed_page_fname))
 
-        # Create output file name
-        if overwrite:
-            out_fname = self.path
-        else:
-            out_fname = file_manager.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
+        # Create output file name - temp file
+        out_fname = file_manager.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
         # Save new PDF file
         with open(out_fname, 'wb') as out_fh:
             out_pdf.write(out_fh)
@@ -129,10 +126,13 @@ class PDF:
         # Close files
         for fh, _ in files_to_close:
             fh.close()
-            
+
+        if overwrite:
+            dst_path = self.path
+        else:
+            dst_path = file_manager.add_suffix_to_path(path=self.path, suffix='_signed')
+            dst_path = file_manager.get_unused_path(path=dst_path)
         # Overwrite origin or create copy
-        dst_path = file_manager.add_suffix_to_path(path=self.path, suffix='_signed')
-        dst_path = file_manager.get_unused_path(path=dst_path)
         shutil.copyfile(out_fname, dst_path)
 
         # Delete files
