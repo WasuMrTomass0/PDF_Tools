@@ -1,0 +1,1 @@
+START /B ..\venv\Scripts\pythonw.exe main.py

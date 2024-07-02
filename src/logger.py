@@ -23,5 +23,6 @@ def log_exceptions(fn):
                 title=Language.error_unknown,
                 msg=str(error)
             )
+            return None
 
     return wrapper

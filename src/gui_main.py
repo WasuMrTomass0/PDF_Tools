@@ -18,7 +18,7 @@ import common
 import images
 import popup_windows
 from language import Language
-from logger import log_exceptions
+from logger import log_exceptions, logger
 from dynamic_settings import DynamicSettings
 from gui_remove_bground import RemoveBackgroundGUI
 
@@ -52,7 +52,7 @@ class ESignGUI:
         self.window.geometry(f'{self.width}x{self.height}')
         self.window.minsize(width=self.WIDTH_MIN, height=self.HEIGHT_MIN)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
-        # self.window.resizable(False, False)
+        self.window.resizable(False, False)
         self.window.title(f'eSign')
         self.window.bind(f'<Configure>', self.resize_window)
 
@@ -108,7 +108,7 @@ class ESignGUI:
         #
         self.overwrite_status = tkinter.BooleanVar()
         self.overwrite_checkbox = ttk.Checkbutton(self.window, text=Language.overwrite, var=self.overwrite_status)
-        self.overwrite_status.set(True)
+        self.overwrite_status.set(False)
         #
         self.signature_fixed_scale = tkinter.BooleanVar()
         self.signature_fixed_scale_checkbox = ttk.Checkbutton(self.window, text=Language.fixed_scale, var=self.signature_fixed_scale)
@@ -396,8 +396,11 @@ class ESignGUI:
         # Remove temp/ content
         files = glob.glob(os.path.join(settings.TEMP_DIR, '*'))
         for f in files:
-            os.remove(f)
-
+            try:
+                os.remove(f)
+            except PermissionError:
+                logger.error(f'File could not be deleted ({f}) - ({__file__}:on_closing())')
+        
         # Close window
         self.window.destroy()
         pass

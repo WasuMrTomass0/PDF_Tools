@@ -117,9 +117,9 @@ class PDF:
             files_to_close.append((pdf_signed_page_fh, pdf_signed_page_fname))
 
         # Create output file name - temp file
-        out_fname = file_manager.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
+        out_tmp_fname = file_manager.get_tmp_filename(prefix='signed_pdf_document_', suffix='.pdf')
         # Save new PDF file
-        with open(out_fname, 'wb') as out_fh:
+        with open(out_tmp_fname, 'wb') as out_fh:
             out_pdf.write(out_fh)
             del out_pdf
 
@@ -127,16 +127,18 @@ class PDF:
         for fh, _ in files_to_close:
             fh.close()
 
+        self.close()
+
         if overwrite:
             dst_path = self.path
         else:
             dst_path = file_manager.add_suffix_to_path(path=self.path, suffix='_signed')
             dst_path = file_manager.get_unused_path(path=dst_path)
         # Overwrite origin or create copy
-        shutil.copyfile(out_fname, dst_path)
+        shutil.copyfile(out_tmp_fname, dst_path)
 
         # Delete files
-        os.remove(out_fname)
+        os.remove(out_tmp_fname)
         for _, fname in files_to_close:
             os.remove(fname)
 

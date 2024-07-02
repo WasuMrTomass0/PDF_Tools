@@ -7,3 +7,4 @@ data/poppler/*
 data/data.json
 data/signatures
 TODO.txt
+ignored/
